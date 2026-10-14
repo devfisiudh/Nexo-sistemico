@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticias | Nexo Sistémico UDH</title>
+    <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/blog.css">
+</head>
+<body>
+    
+    <div id="navbar-container"></div>
+
+    <main class="container" style="padding: 40px 20px; min-height: 80vh;">
+        <header class="page-header">
+            <div class="page-header-inner">
+                <span class="page-header-tag">PAISI · UDH</span>
+                <h1 class="page-header-title">Actualidad <span style="color:#E31C25">PAISI</span></h1>
+                <p class="page-header-sub">Las últimas novedades de nuestra facultad — hasta 6 noticias activas.</p>
+            </div>
+        </header>
+
+        <!-- BUSCADOR LOCAL NOTICIAS -->
+        <div class="local-search-wrapper">
+            <div class="local-search-box">
+                <svg class="local-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" id="localSearchInput" placeholder="Buscar noticias por título o categoría..." autocomplete="off" />
+                <button class="local-search-clear" id="localSearchClear" title="Limpiar">✕</button>
+            </div>
+        </div>
+
+        <div class="news-grid">
+            <div class="loader-simple" style="text-align: center; width: 100%; color: #fff;">Cargando contenido...</div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/noticias.js"></script>
+</body>
+</html>

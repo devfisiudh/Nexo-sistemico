@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio | Nexo Sistémico UDH</title>
+
+    <link rel="shortcut icon" href="assets/icons/favicon.png" type="image/png">
+    
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/blog.css"> </head>
+<body>
+
+    <div id="navbar-container"></div>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Innovación e Ingeniería <br><span class="highlight">PAISI UDH</span></h1>
+                <p>
+                    El punto de encuentro digital para estudiantes, docentes y egresados.
+                    Noticias, eventos y proyectos tecnológicos en un solo lugar.
+                </p>
+                <div class="hero-buttons">
+                    <a href="pages/noticias.html" class="cta-button">Explorar Noticias</a>
+                    <a href="pages/eventos.html" class="cta-button secondary" style="background:transparent; border:1px solid #fff; margin-left:10px;">Ver Agenda</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="latest-section">
+            <div class="container">
+                <h2 class="section-title" style="text-align:center; margin-bottom:10px; color:#e63946;">Lo Último en la Facultad</h2>
+                <p style="text-align:center; color:#666; margin-bottom:40px; font-size:0.9rem;">La noticia y el evento más recientes</p>
+
+                <div class="latest-grid" id="latest-grid">
+                    <div style="color:#aaa; text-align:center; grid-column:1/-1;">Cargando...</div>
+                </div>
+
+                <div class="latest-links">
+                    <a href="pages/noticias.html">Ver todas las noticias →</a>
+                    <a href="pages/eventos.html">Ver agenda completa →</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <div class="features-grid">
+                    
+                    <a href="pages/noticias.html" class="feature-card" style="text-decoration:none; color:inherit;">
+                        <h3>📰 Actualidad Académica</h3>
+                        <p>Entérate de los últimos congresos, hackathons y comunicados oficiales de la facultad.</p>
+                    </a>
+
+                    <div class="feature-card">
+                        <h3>🚌 Rastreo UDH</h3>
+                        <p>Proyecto IoT en desarrollo para monitorear el transporte universitario en tiempo real.</p>
+                    </div>
+
+                    <a href="pages/comunidad.html" class="feature-card" style="text-decoration:none; color:inherit; border: 1px solid #e63946;">
+                        <h3>🤝 Comunidad</h3>
+                        <p>Tu espacio central de avisos, convocatorias y novedades</p>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script src="js/main.js"></script>
+    <script type="module" src="js/home-latest.js"></script>
+
+</body>
+</html>

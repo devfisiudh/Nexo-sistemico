@@ -1,0 +1,144 @@
+/* css/articulo.css - DARK MODE */
+
+.article-container {
+    max-width: 800px; /* Ancho lectura tipo blog Medium */
+    margin: 0 auto;
+    padding: 100px 20px 60px;
+    min-height: 80vh;
+}
+
+/* Botón volver */
+.back-link {
+    color: #e63946;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 30px;
+    transition: transform 0.3s;
+}
+.back-link:hover { transform: translateX(-5px); }
+
+/* Cabecera del artículo */
+.article-header { margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 30px; }
+
+.article-meta {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.article-title {
+    color: #fff;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.article-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 40px;
+    background-color: #222;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Portada real subida desde el panel */
+.article-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Cuando no hay portada, el bloque de color se rotula. */
+.article-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.18);
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+}
+
+/* Cuerpo del texto */
+.article-body {
+    color: #cccccc;
+    font-size: 1.1rem;
+    line-height: 1.8; /* Importante para leer bien */
+}
+
+.article-body p { margin-bottom: 20px; }
+.article-body h2 { color: #fff; margin-top: 40px; margin-bottom: 15px; }
+
+/* --- BOTÓN DE ACCIÓN AL FINAL DEL ARTÍCULO --- */
+.article-action {
+    margin-top: 40px;       /* Separación del texto */
+    padding-top: 30px;      /* Aire interior */
+    border-top: 1px solid #333; /* Una línea para separar visualmente */
+    text-align: center;     /* Centrado */
+}
+
+.article-btn {
+    display: inline-block;
+    background-color: #e63946; /* Rojo Scarlet */
+    color: white;
+    padding: 15px 40px;
+    border-radius: 50px;    /* Redondeado tipo píldora */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.article-btn:hover {
+    transform: translateY(-3px); /* Se eleva */
+    box-shadow: 0 10px 20px rgba(230, 57, 70, 0.3); /* Resplandor rojo */
+    background-color: #ff4d5a; /* Un poco más claro */
+}
+
+/* ============================================================
+   RESPONSIVO - ARTÍCULO
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .article-container {
+        padding: 80px 18px 50px;
+    }
+
+    .article-title {
+        font-size: 1.9rem;
+    }
+
+    .article-image {
+        height: 240px;
+    }
+
+    .article-body {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .article-title {
+        font-size: 1.6rem;
+    }
+
+    .article-image {
+        height: 180px;
+    }
+
+    .article-btn {
+        padding: 13px 28px;
+        font-size: 1rem;
+    }
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunidad PAISI | Nexo Sistémico</title>
+    <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/comunidad.css">
+</head>
+<body>
+
+    <div id="navbar-container"></div>
+
+    <!-- TABLÓN DE ANUNCIOS -->
+    <section class="tablon-section">
+        <div class="tablon-container">
+            <div class="tablon-header">
+                <h2 class="tablon-title">📌 Tablón de <span class="highlight">Anuncios</span></h2>
+                <p class="tablon-subtitle">Espacio para alumnos y profesores · Publicaciones vigentes</p>
+            </div>
+            <div class="tablon-grid" id="tablon-grid">
+                <!-- Anuncios cargados desde anuncios.json -->
+                <p style="color:#555; text-align:center; width:100%;">Cargando anuncios...</p>
+            </div>
+            <div class="tablon-footer">
+                <a href="contacto.html" class="tablon-cta-btn">📮 Publicar en el tablón</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer-container"></div>
+
+    <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/comunidad.js"></script>
+</body>
+</html>

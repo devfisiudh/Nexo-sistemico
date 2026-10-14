@@ -1,0 +1,98 @@
+/* ============================================================
+   GLOBAL.CSS — Nexo Sistémico UDH · Dark Tech
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+    /* PALETA PRINCIPAL */
+    --scarlet:   #E31C25;
+    --scarlet-dk:#B5151C;
+    --scarlet-glow: rgba(227,28,37,0.18);
+
+    /* FONDOS */
+    --coarse:    #0C0C0C;
+    --surface-1: #141414;
+    --surface-2: #1A1A1A;
+    --surface-3: #222222;
+
+    /* BORDES */
+    --border-1:  #1F1F1F;
+    --border-2:  #2A2A2A;
+    --loafer:    #333333;
+
+    /* TEXTO */
+    --white:     #FFFFFF;
+    --text-1:    #F0F0F0;
+    --text-2:    #B0B0B0;
+    --antler:    #888888;
+    --text-muted:#555555;
+
+    /* SOMBRAS */
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.5);
+    --shadow-md: 0 6px 16px rgba(0,0,0,0.7);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.8);
+
+    /* TRANSICIÓN ESTÁNDAR */
+    --ease: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* RESET */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.65;
+    background-color: var(--coarse);
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-1); }
+::-webkit-scrollbar-thumb { background: var(--loafer); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--antler); }
+
+/* SELECCIÓN */
+::selection { background: var(--scarlet-glow); color: #fff; }
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--ease);
+}
+
+/* CONTENEDOR */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* TÍTULOS */
+h1, h2, h3, h4 {
+    color: var(--white);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+/* LOADER */
+.loader-simple {
+    color: var(--antler);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* HIGHLIGHT */
+.highlight {
+    color: var(--scarlet);
+}

@@ -1,0 +1,559 @@
+/* css/comunidad.css - Blog Libre Comunidad FISI */
+
+/* HEADER */
+.community-header {
+    text-align: center;
+    padding: 60px 20px 50px;
+    background: linear-gradient(to bottom, #161616, #0d0d0d);
+    border-bottom: 1px solid #333;
+}
+
+.community-header h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.community-header .highlight {
+    color: #e63946;
+}
+
+.community-header p {
+    color: #aaa;
+    font-size: 1.05rem;
+    margin-bottom: 25px;
+}
+
+.cta-btn-comunidad {
+    display: inline-block;
+    background-color: transparent;
+    color: #e63946;
+    border: 1px solid #e63946;
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.cta-btn-comunidad:hover {
+    background-color: #e63946;
+    color: #fff;
+}
+
+/* FILTROS */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 8px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: all 0.25s;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #e63946;
+    border-color: #e63946;
+    color: #fff;
+}
+
+/* FEED CONTAINER */
+.feed-container {
+    max-width: 750px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* TARJETA DE POST */
+.post-card {
+    background-color: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+}
+
+.post-card:hover {
+    border-color: #444;
+}
+
+/* HEADER DEL POST */
+.post-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #222;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-avatar {
+    width: 42px;
+    height: 42px;
+    background-color: #e63946;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.post-meta h4 {
+    margin: 0;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.post-meta span {
+    color: #666;
+    font-size: 0.78rem;
+}
+
+.post-tag {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    background: #222;
+    color: #888;
+    border: 1px solid #333;
+}
+
+.tag-meme    { background: rgba(99,60,180,0.2); color: #a78bfa; border-color: #a78bfa; }
+.tag-debate  { background: rgba(14,165,233,0.15); color: #38bdf8; border-color: #38bdf8; }
+.tag-aviso   { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: #fbbf24; }
+
+/* CUERPO */
+.post-body {
+    padding: 18px 20px;
+    color: #ddd;
+    font-size: 0.98rem;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* IMAGEN opcional */
+.post-img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    display: block;
+}
+
+/* ACCIONES */
+.post-actions {
+    padding: 12px 20px;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    gap: 22px;
+}
+
+.action-btn {
+    color: #666;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.action-btn:hover {
+    color: #e63946;
+}
+
+/* POST VACÍO (filtro sin resultados) */
+.empty-filter {
+    text-align: center;
+    color: #555;
+    padding: 60px 0;
+    font-size: 1.1rem;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+    .community-header { padding: 45px 15px 35px; }
+    .community-header h1 { font-size: 2rem; }
+    .feed-container { margin: 25px auto; padding: 0 15px; }
+}
+
+@media (max-width: 480px) {
+    .community-header h1 { font-size: 1.7rem; }
+    .post-header { flex-wrap: wrap; gap: 8px; }
+    .post-body { font-size: 0.93rem; padding: 15px; }
+}
+
+/* ============================================================
+   TABLÓN DE ANUNCIOS (Sugerencia 1)
+   ============================================================ */
+
+.tablon-section {
+    background: linear-gradient(180deg, #111 0%, #0d0d0d 100%);
+    padding: 50px 20px 40px;
+    border-bottom: 1px solid #1f1f1f;
+}
+
+.tablon-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.tablon-header {
+    margin-bottom: 28px;
+}
+
+.tablon-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+.tablon-subtitle {
+    color: #555;
+    font-size: 0.88rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* GRID DE ANUNCIOS */
+.tablon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+/* TARJETA DE ANUNCIO */
+.anuncio-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #222;
+    background: #161616;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+}
+
+.anuncio-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* Ribbon coloreado por tipo */
+.anuncio-ribbon {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    color: #fff;
+}
+
+.anuncio-urgente { border-left: 4px solid #e63946; }
+.anuncio-urgente .anuncio-ribbon { background: #e63946; }
+
+.anuncio-info { border-left: 4px solid #3b82f6; }
+.anuncio-info .anuncio-ribbon { background: #1d4ed8; }
+
+.anuncio-social { border-left: 4px solid #8b5cf6; }
+.anuncio-social .anuncio-ribbon { background: #6d28d9; }
+
+.anuncio-venta { border-left: 4px solid #f59e0b; }
+.anuncio-venta .anuncio-ribbon { background: #b45309; }
+
+.anuncio-body {
+    padding: 14px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.anuncio-texto {
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    flex: 1;
+}
+
+/* Título opcional del anuncio. La tabla tiene la columna `titulo`; el JSON
+   histórico no la usaba, así que muchas tarjetas saldrán sin ella. */
+.anuncio-titulo {
+    color: #f0f0f0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+/* Tablón sin announcements publicados */
+.tablon-vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #555;
+    padding: 40px 20px;
+}
+
+.anuncio-autor {
+    font-size: 0.72rem;
+    color: #555;
+    font-style: italic;
+    border-top: 1px solid #1e1e1e;
+    padding-top: 8px;
+}
+
+/* FOOTER DEL TABLÓN */
+.tablon-footer {
+    text-align: center;
+}
+
+.tablon-cta-btn {
+    display: inline-block;
+    background: transparent;
+    color: #888;
+    border: 1px solid #2a2a2a;
+    padding: 9px 24px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s;
+}
+
+.tablon-cta-btn:hover {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #444;
+}
+
+/* SEPARADOR DE SECCIÓN */
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 30px 20px 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #222;
+}
+
+.section-divider span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #444;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* RESPONSIVO TABLÓN */
+@media (max-width: 768px) {
+    .tablon-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .tablon-title { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+    .tablon-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   BUSCADOR LOCAL EN COMUNIDAD
+   ============================================================ */
+
+.community-search {
+    margin: 20px auto 28px;
+    max-width: 480px;
+}
+
+/* Heredamos estilos base de .local-search-wrapper en blog.css */
+/* Sobreescribimos solo lo que diferencia a la comunidad */
+.community-search .local-search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 50px;
+    padding: 10px 18px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.community-search .local-search-box:focus-within {
+    border-color: #e63946;
+    box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
+}
+
+.community-search .local-search-icon {
+    color: #666;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.community-search .local-search-box:focus-within .local-search-icon {
+    color: #e63946;
+}
+
+.community-search #localSearchInput {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f0f0f0;
+    font-size: 0.92rem;
+    width: 100%;
+    font-family: inherit;
+}
+
+.community-search #localSearchInput::placeholder {
+    color: #444;
+}
+
+.community-search .local-search-clear {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.community-search .local-search-clear:hover {
+    color: #fff;
+    background: #2a2a2a;
+}
+
+/* ============================================================
+   TARJETAS DE ANUNCIO — MODO IMAGEN / MIXTO / TEXTO
+   ============================================================ */
+
+/* Imagen dentro de la tarjeta de anuncio */
+.anuncio-img-wrap {
+    width: 100%;
+    overflow: hidden;
+    max-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+}
+
+.anuncio-img-full {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.anuncio-card:hover .anuncio-img-full {
+    transform: scale(1.03);
+}
+
+/* Footer del anuncio con botón de destino */
+.anuncio-footer {
+    padding: 0 16px 14px;
+}
+
+.anuncio-dest-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.4px;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+}
+
+/* Form (Google Forms) → azul */
+.anuncio-btn-form {
+    background: rgba(59,130,246,0.15);
+    color: #60a5fa;
+    border-color: #3b82f6;
+}
+.anuncio-btn-form:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+
+/* WhatsApp → verde */
+.anuncio-btn-whatsapp {
+    background: rgba(37,211,102,0.12);
+    color: #25d366;
+    border-color: #25d366;
+}
+.anuncio-btn-whatsapp:hover {
+    background: #25d366;
+    color: #fff;
+}
+
+/* Email → gris/plata */
+.anuncio-btn-email {
+    background: rgba(148,163,184,0.1);
+    color: #94a3b8;
+    border-color: #475569;
+}
+.anuncio-btn-email:hover {
+    background: #475569;
+    color: #fff;
+}
+
+/* URL / Página → rojo (marca) */
+.anuncio-btn-url,
+.anuncio-btn-pagina {
+    background: rgba(227,28,37,0.12);
+    color: #e63946;
+    border-color: #e63946;
+}
+.anuncio-btn-url:hover,
+.anuncio-btn-pagina:hover {
+    background: #e63946;
+    color: #fff;
+}

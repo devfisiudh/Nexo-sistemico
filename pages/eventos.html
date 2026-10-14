@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos | Nexo Sistémico UDH</title>
+    <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/blog.css">
+</head>
+<body>
+
+    <div id="navbar-container"></div>
+
+    <main class="container" style="padding: 40px 20px; min-height: 80vh;">
+        <header class="page-header">
+            <div class="page-header-inner">
+                <span class="page-header-tag">PAISI · UDH</span>
+                <h1 class="page-header-title">Agenda <span style="color:#E31C25">PAISI</span></h1>
+                <p class="page-header-sub">Conferencias, talleres y vida universitaria — hasta 6 eventos activos.</p>
+            </div>
+        </header>
+
+        <!-- BUSCADOR LOCAL EVENTOS -->
+        <div class="local-search-wrapper">
+            <div class="local-search-box">
+                <svg class="local-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" id="localSearchInput" placeholder="Buscar eventos por nombre, tipo o lugar..." autocomplete="off" />
+                <button class="local-search-clear" id="localSearchClear" title="Limpiar">✕</button>
+            </div>
+        </div>
+
+        <div class="events-grid">
+            <div class="loader-simple" style="text-align: center; width: 100%; color: #fff;">Cargando agenda...</div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/eventos.js"></script>
+</body>
+</html>

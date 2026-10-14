@@ -1,0 +1,150 @@
+/* css/rastreo.css */
+
+.coming-soon-wrapper {
+    background-color: var(--coarse);
+    min-height: 85vh; /* Ocupa casi toda la pantalla */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efecto de fondo sutil (opcional) */
+.coming-soon-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, rgba(166, 27, 38, 0.1) 0%, transparent 70%);
+}
+
+.tech-card {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.status-badge {
+    background-color: rgba(166, 27, 38, 0.2);
+    color: var(--scarlet);
+    border: 1px solid var(--scarlet);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: pulse 2s infinite;
+}
+
+.glitch-text {
+    font-size: 3rem;
+    color: var(--white);
+    margin-top: 20px;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.sub-text {
+    color: var(--antler);
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
+/* EL RADAR (Animación CSS) */
+.loader-radar {
+    width: 80px;
+    height: 80px;
+    border: 2px solid var(--nuthatch);
+    border-radius: 50%;
+    margin: 0 auto 30px auto;
+    position: relative;
+    background: radial-gradient(circle, var(--coarse) 60%, rgba(166,27,38,0.2) 100%);
+}
+
+.scan-line {
+    width: 50%;
+    height: 2px;
+    background: var(--scarlet);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0; /* Gira desde el centro */
+    animation: radar-spin 2s linear infinite;
+    box-shadow: 0 0 10px var(--scarlet);
+}
+
+.info-text {
+    color: var(--loafer);
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.terminal-log {
+    background-color: #000;
+    color: #0f0; /* Verde clásico de terminal */
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: left;
+    margin-bottom: 30px;
+    opacity: 0.8;
+    min-height: 60px;
+}
+
+.btn-return {
+    color: var(--white);
+    border: 1px solid var(--white);
+    padding: 10px 25px;
+    border-radius: 30px;
+    transition: 0.3s;
+}
+
+.btn-return:hover {
+    background-color: var(--scarlet);
+    border-color: var(--scarlet);
+}
+
+@keyframes radar-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* ============================================================
+   RESPONSIVO - RASTREO BUS
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .tech-card {
+        padding: 15px;
+    }
+
+    .glitch-text {
+        font-size: 2.2rem;
+    }
+
+    .terminal-log {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .glitch-text {
+        font-size: 1.8rem;
+    }
+
+    .loader-radar {
+        width: 65px;
+        height: 65px;
+    }
+}

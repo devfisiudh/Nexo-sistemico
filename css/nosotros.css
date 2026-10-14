@@ -1,0 +1,235 @@
+/* css/nosotros.css - DARK MODE */
+
+/* CABECERA */
+.about-header {
+    text-align: center;
+    margin-bottom: 60px;
+    border-bottom: 1px solid #333; /* Línea gris oscura sutil */
+    padding-bottom: 40px;
+}
+
+.about-title {
+    color: #e63946; /* Rojo Scarlet */
+    font-size: 3rem;
+    margin-bottom: 15px;
+    font-weight: 800;
+}
+
+.about-subtitle {
+    color: #cccccc; /* Gris claro visible */
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* SECCIÓN MISIÓN / VISIÓN */
+.mission-vision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-bottom: 80px;
+}
+
+.mv-card {
+    background-color: #161616; /* ANTES: White | AHORA: Dark Gray */
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid #333;    /* Borde sutil */
+    border-left: 5px solid #e63946; /* Acento rojo a la izquierda */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.mv-card:hover {
+    transform: translateY(-5px); /* Pequeña animación al pasar mouse */
+}
+
+.mv-card h2 {
+    color: #ffffff; /* Texto blanco brillante */
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mv-card p {
+    color: #b0b0b0; /* Gris suave para lectura */
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* MENSAJE DE LA FACULTAD (Cita) */
+.faculty-quote {
+    background-color: #1a1a1a; /* Un poco más claro que el fondo */
+    color: #fff;
+    padding: 60px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 80px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+
+.faculty-quote h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-style: italic;
+}
+
+.quote-author {
+    color: #e63946; /* Autor en rojo */
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.faculty-quote::before {
+    content: '"';
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    font-size: 10rem;
+    color: #e63946;
+    opacity: 0.1; /* Transparente para no molestar */
+    font-family: serif;
+}
+
+/* EQUIPO DE DESARROLLO */
+.dev-section {
+    text-align: center;
+    padding-top: 40px;
+    border-top: 1px solid #333;
+}
+
+.dev-title {
+    color: #fff;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.dev-desc {
+    margin-bottom: 30px;
+    color: #888;
+}
+
+.dev-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.dev-card {
+    display: flex;
+    align-items: center;
+    background: #111; /* Fondo muy oscuro */
+    padding: 15px 25px;
+    border-radius: 50px; /* Forma de píldora */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border: 1px solid #333;
+    transition: border-color 0.3s ease;
+}
+
+.dev-card:hover {
+    border-color: #e63946;
+}
+
+.dev-avatar {
+    width: 50px;
+    height: 50px;
+    background-color: #e63946; /* Rojo Notch */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 15px;
+}
+
+.avatar-secondary {
+    background-color: #333; /* Gris para el Co-Dev */
+}
+
+.dev-info {
+    text-align: left;
+}
+
+.dev-name {
+    display: block;
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.dev-role {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+    font-family: monospace;
+}
+
+/* ============================================================
+   RESPONSIVO - NOSOTROS
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .about-title {
+        font-size: 2.2rem;
+    }
+
+    .about-subtitle {
+        font-size: 1rem;
+    }
+
+    .mission-vision-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        margin-bottom: 50px;
+    }
+
+    .mv-card {
+        padding: 25px;
+    }
+
+    .mv-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .faculty-quote {
+        padding: 35px 25px;
+        margin-bottom: 50px;
+    }
+
+    .faculty-quote h3 {
+        font-size: 1.5rem;
+    }
+
+    .dev-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dev-card {
+        width: 100%;
+        max-width: 320px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .about-title {
+        font-size: 1.8rem;
+    }
+
+    .faculty-quote::before {
+        font-size: 6rem;
+        top: -10px;
+    }
+}

@@ -1,0 +1,389 @@
+/* --- 1. HERO SECTION (Fondo de Puntos) --- */
+.hero {
+    /* El truco del fondo Grid/Puntos */
+    background-color: #0d0d0d;
+    background-image: radial-gradient(#333 1px, transparent 1px);
+    background-size: 30px 30px;
+    
+    color: #ffffff;
+    padding: 100px 20px;
+    text-align: center;
+    min-height: 70vh; /* Ocupa buena parte de la pantalla */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.hero .highlight {
+    color: #e63946; /* Rojo FISI */
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: #cccccc;
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.cta-button {
+    background-color: #e63946;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: background 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #c92a35;
+}
+
+/* --- 2. FEATURES (Actualidad, Rastreo, Comunidad) --- */
+.features {
+    background-color: #121212; /* Fondo apenas más claro que el negro */
+    padding: 60px 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background: #1a1a1a; /* Tarjeta oscura */
+    border: 1px solid #333;
+    padding: 30px;
+    border-radius: 10px;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: #e63946;
+}
+
+.feature-card h3 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.feature-card p {
+    color: #aaa;
+    line-height: 1.6;
+}
+
+/* --- 3. ALIADOS ESTRATÉGICOS (Sección Nueva) --- */
+.aliados-section {
+    padding: 80px 20px;
+    background-color: #0d0d0d; /* Vuelve al negro profundo */
+    text-align: center;
+    border-top: 1px solid #222;
+}
+
+.section-title {
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 50px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.aliados-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.aliado-card {
+    background: #161616;
+    border: 1px solid #333;
+    padding: 25px 40px; /* Más compactas */
+    border-radius: 8px;
+    min-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.aliado-card:hover {
+    border-color: #666;
+    background: #222;
+}
+
+.aliado-card h3 {
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.aliado-card p {
+    color: #666;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVO - HOME
+   ============================================================ */
+
+/* TABLET (max 768px) */
+@media (max-width: 768px) {
+
+    /* Hero */
+    .hero {
+        padding: 70px 20px;
+        min-height: 60vh;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .hero-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cta-button {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+        /* Anular el margin-left inline del HTML */
+        margin-left: 0 !important;
+    }
+
+    /* Features */
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Aliados */
+    .section-title {
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+    }
+
+    .aliados-grid {
+        gap: 15px;
+    }
+
+    .aliado-card {
+        min-width: 140px;
+        padding: 20px 25px;
+    }
+}
+
+/* MÓVIL PEQUEÑO (max 480px) */
+@media (max-width: 480px) {
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+
+    .features {
+        padding: 40px 15px;
+    }
+
+    .feature-card {
+        padding: 20px;
+    }
+
+    .aliados-grid {
+        justify-content: center;
+    }
+
+    .aliado-card {
+        min-width: 45%;
+        padding: 15px;
+    }
+}
+
+/* Grid de noticias del home (clase) */
+.home-news-responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .home-news-responsive-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   SECCIÓN: LO ÚLTIMO EN LA FACULTAD (1 noticia + 1 evento)
+   ============================================================ */
+
+.latest-section {
+    padding: 70px 20px;
+    background-color: #0d0d0d;
+    border-top: 1px solid #1a1a1a;
+}
+
+.latest-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    max-width: 900px;
+    margin: 0 auto 40px;
+}
+
+.latest-card {
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+}
+
+.latest-card:hover {
+    border-color: #e63946;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(230,57,70,0.12);
+}
+
+.latest-card-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.badge-noticia {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid #444;
+}
+
+.badge-evento {
+    background: rgba(230,57,70,0.2);
+    color: #e63946;
+    border: 1px solid #e63946;
+}
+
+.card-color-bar {
+    height: 130px;
+    width: 100%;
+    opacity: 0.8;
+    overflow: hidden;
+}
+
+/* Portada real en la tarjeta del Home */
+.latest-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.latest-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.latest-meta {
+    font-size: 0.78rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.latest-card-body h3 {
+    font-size: 1.15rem;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.latest-card-body p {
+    font-size: 0.9rem;
+    color: #999;
+    line-height: 1.6;
+    flex-grow: 1;
+    margin-bottom: 18px;
+}
+
+.latest-link {
+    color: #e63946;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: gap 0.2s;
+    display: inline-block;
+    margin-top: auto;
+}
+
+.latest-link:hover {
+    color: #ff6b6b;
+}
+
+.latest-links {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.latest-links a {
+    color: #666;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.latest-links a:hover {
+    color: #e63946;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .latest-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .latest-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+}

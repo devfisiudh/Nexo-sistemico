@@ -1,0 +1,22 @@
+# Dependencias (el proyecto no usa npm, pero por si acaso)
+node_modules/
+package-lock.json
+
+# Vercel
+.vercel/
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Editores
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp

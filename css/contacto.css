@@ -1,0 +1,210 @@
+/* css/contacto.css - VERSIÓN FINAL DARK MODE */
+
+/* HEADER */
+.contact-header {
+    text-align: center;
+    margin-bottom: 50px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    border-bottom: 1px solid #333; /* Línea separadora sutil */
+    padding-bottom: 30px;
+}
+
+.contact-header h1 {
+    color: #e63946; /* Rojo Scarlet */
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.contact-header p {
+    color: #cccccc; /* Gris claro legible */
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* GRILLA */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 60px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* TARJETA OSCURA */
+.request-card {
+    background-color: #161616; /* ANTES: var(--nuthatch) | AHORA: Gris oscuro standard */
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #333;    /* ANTES: var(--loafer) */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.request-card:hover {
+    transform: translateY(-5px);
+    border-color: #e63946; /* Borde rojo al pasar el mouse */
+    box-shadow: 0 10px 25px rgba(230, 57, 70, 0.15); /* Resplandor rojo */
+}
+
+.req-title {
+    color: #ffffff;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+.req-description {
+    font-size: 0.95rem;
+    color: #b0b0b0; /* ANTES: var(--antler) */
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* CAJA DE REGLAS (MÁS OSCURA AÚN) */
+.guidelines-box {
+    background-color: #0d0d0d; /* Negro casi puro */
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    flex-grow: 1; /* Empuja el botón hacia abajo */
+    border: 1px solid #222;
+}
+
+.guidelines-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #e63946; /* Rojo */
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.guidelines-list {
+    list-style: none;
+    font-size: 0.9rem;
+    color: #999;
+    padding: 0;
+    margin: 0;
+}
+
+.guidelines-list li {
+    margin-bottom: 8px;
+    padding-left: 15px;
+    position: relative;
+}
+
+.guidelines-list li::before {
+    content: "•";
+    color: #e63946;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* BOTÓN EMAIL */
+.btn-email {
+    display: block;
+    text-align: center;
+    background-color: transparent; /* Fondo transparente */
+    color: #e63946;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none; /* Quitar subrayado del enlace */
+    transition: all 0.3s ease;
+    border: 1px solid #e63946; /* Borde rojo */
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-email:hover {
+    background-color: #e63946; /* Se llena de rojo */
+    color: #ffffff; /* Letras blancas */
+    box-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
+}
+
+/* FOOTER CONTACTO (Aviso legal abajo) */
+.contact-footer {
+    text-align: center;
+    padding: 30px;
+    background-color: #161616;
+    border: 1px solid #333;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.contact-footer p {
+    margin: 5px 0;
+}
+
+.contact-footer p:last-child {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #666; /* Texto legal gris oscuro */
+    border-top: 1px solid #333;
+    padding-top: 15px;
+}
+
+/* ============================================================
+   RESPONSIVO - CONTACTO / SOLICITUDES
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .contact-header h1 {
+        font-size: 1.9rem;
+    }
+
+    .contact-header p {
+        font-size: 1rem;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .request-card {
+        padding: 22px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .contact-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .req-title {
+        font-size: 1.2rem;
+    }
+
+    .btn-email {
+        padding: 14px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Tablón card accent */
+.request-card-tablon {
+    border-top: 3px solid #f59e0b;
+}
+
+.btn-tablon {
+    background: linear-gradient(135deg, #b45309, #d97706) !important;
+    border-color: #f59e0b !important;
+}
+
+.btn-tablon:hover {
+    background: transparent !important;
+    color: #f59e0b !important;
+    border-color: #f59e0b !important;
+}

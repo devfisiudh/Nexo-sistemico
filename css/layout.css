@@ -1,0 +1,312 @@
+/* --- NAVBAR (MENÚ) --- */
+.navbar {
+    background-color: rgba(15, 15, 15, 0.95); /* Negro casi opaco */
+    padding: 15px 0;
+    border-bottom: 1px solid var(--loafer);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* LOGO */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-decoration: none;
+}
+
+.logo-img {
+    height: 50px;
+    width: auto;
+}
+
+.brand-name {
+    color: var(--white);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.brand-name .highlight {
+    color: var(--scarlet);
+}
+
+/* ENLACES DEL MENÚ */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--antler); /* Gris claro */
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    color: var(--scarlet); /* Rojo al pasar el mouse */
+}
+
+/* BOTÓN ESPECIAL */
+.nav-btn-special {
+    background-color: var(--scarlet);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.nav-btn-special:hover {
+    background-color: #b9151c; /* Rojo más oscuro */
+    color: var(--white);
+}
+
+/* HAMBURGUESA (MÓVIL) */
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: var(--white);
+}
+
+/* --- FOOTER REINICIADO --- */
+.main-footer {
+    background-color: #0d0d0d; /* Negro elegante */
+    color: #b3b3b3; /* Texto gris claro para que no canse la vista */
+    padding: 60px 0 20px;
+    border-top: 1px solid #222;
+    margin-top: auto;
+    font-size: 0.95rem;
+}
+
+/* Contenedor Flex para las 3 columnas */
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; /* Para móviles */
+    gap: 40px;
+}
+
+/* Cada columna */
+.footer-col {
+    flex: 1; /* Todas ocupan el mismo ancho disponible */
+    min-width: 250px; /* Ancho mínimo para que no se aplasten */
+}
+
+/* Títulos (Logo y encabezados) */
+.footer-logo {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.footer-logo .highlight {
+    color: #e63946; /* El rojo de tu marca */
+}
+
+.footer-col h4 {
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Enlaces */
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col a {
+    color: #b3b3b3;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer-col a:hover {
+    color: #fff;
+    padding-left: 5px; /* Efecto de desplazamiento */
+}
+
+/* Barra inferior */
+.footer-bottom {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
+    color: var(--antler);
+    
+    /* Flexbox para centrar y alinear los elementos */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap; /* Para que no se rompa en móviles */
+}
+
+.separator {
+    color: var(--antler);
+    opacity: 0.5;
+}
+
+/* Estilo para el contenedor de la firma */
+.dev-signature {
+    font-family: 'Consolas', 'Monaco', monospace; /* Fuente tipo código */
+    letter-spacing: 0.5px;
+    color: var(--antler);
+}
+
+/* Estilo EXCLUSIVO para "Notch" */
+.brand-notch {
+    color: var(--scarlet);        /* Tu rojo firma */
+    font-weight: bold;
+    text-transform: uppercase;
+    position: relative;
+    cursor: help;                 /* Cambia el cursor para indicar curiosidad */
+    transition: all 0.3s ease;
+}
+
+/* Efecto al pasar el mouse sobre Notch */
+.brand-notch:hover {
+    color: var(--white);
+    text-shadow: 0 0 10px var(--scarlet); /* Resplandor de neón rojo */
+}
+
+/* Opcional: Un pequeño subrayado animado solo para tu nombre */
+.brand-notch::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--scarlet);
+    transition: width 0.3s;
+}
+
+.brand-notch:hover::after {
+    width: 100%;
+}
+
+/* ============================================================
+   RESPONSIVO - NAVBAR & FOOTER
+   ============================================================ */
+
+/* TABLET (max 768px) */
+@media (max-width: 768px) {
+
+    /* --- NAVBAR --- */
+    .hamburger {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background-color: rgba(10, 10, 10, 0.98);
+        width: 100%;
+        gap: 0;
+        padding: 20px 0;
+        transition: left 0.3s ease;
+        border-top: 1px solid #333;
+        z-index: 999;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-item {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-link {
+        display: block;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #1a1a1a;
+    }
+
+    .nav-btn-special {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 12px 30px;
+    }
+
+    /* Animación hamburguesa → X */
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    .bar {
+        transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* --- FOOTER --- */
+    .footer-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .footer-col {
+        min-width: 100%;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .separator {
+        display: none;
+    }
+}
+
+/* MÓVIL PEQUEÑO (max 480px) */
+@media (max-width: 480px) {
+    .brand-name {
+        font-size: 1.1rem;
+    }
+
+    .logo-img {
+        height: 38px;
+    }
+}

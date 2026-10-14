@@ -1,0 +1,557 @@
+/* --- CSS/BLOG.CSS - VERSIÓN DARK & FUNCIONAL --- */
+
+/* 1. GRID (Igual que antes) */
+.news-grid, 
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+}
+
+/* 2. TARJETA BASE (Adaptada a Dark) */
+.news-card,
+.event-card { /* Aseguramos que ambas usen este estilo */
+    background-color: #161616; /* ANTES: #ffffff | AHORA: Gris oscuro */
+    border: 1px solid #333;    /* ANTES: Borde casi invisible | AHORA: Borde sutil */
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card:hover,
+.event-card:hover {
+    transform: translateY(-5px);
+    border-color: #e63946; /* Rojo Scarlett */
+    box-shadow: 0 10px 25px rgba(230, 57, 70, 0.15); /* Resplandor rojo */
+}
+
+/* 3. IMAGEN */
+.card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #222; /* Placeholder oscuro */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Portada real subida desde el panel. El contenedor conserva el color de
+   categoría como respaldo mientras carga la imagen. */
+.card-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 4. CONTENIDO */
+.card-content {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+}
+
+/* 5. METADATOS (Fecha y Lugar - Estilo Evento) */
+/* Esto es lo que querías recuperar: la barrita roja al lado */
+.card-meta {
+    font-size: 0.9rem;
+    color: #b0b0b0; /* Gris claro */
+    margin-bottom: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    border-left: 3px solid #e63946; /* La barrita roja */
+    padding-left: 12px;
+    background: linear-gradient(90deg, rgba(230,57,70,0.1) 0%, rgba(0,0,0,0) 100%); /* Pequeño degradado de fondo opcional */
+}
+
+/* 6. TÍTULOS Y TEXTO */
+.card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff; /* ANTES: Coarse (Oscuro) | AHORA: Blanco */
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.card-excerpt {
+    font-size: 0.95rem;
+    color: #aaaaaa; /* ANTES: #555 | AHORA: Gris medio */
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* 7. ETIQUETAS (Categoría) */
+.card-category, 
+.tag {
+    background-color: #000;
+    color: #fff;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+    letter-spacing: 1px;
+}
+/* Si es evento, pintamos la etiqueta roja */
+.cat-evento { 
+    background-color: #e63946; 
+    border-color: #e63946;
+}
+
+/* --- BOTONES (La gran diferencia funcional) --- */
+
+/* ESTILO 1: NOTICIAS (Enlace sutil "Leer más") */
+.read-more {
+    margin-top: auto;
+    color: #e63946;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    transition: gap 0.3s;
+}
+
+.read-more:hover {
+    gap: 10px; /* La flechita se mueve */
+    color: #ff6b6b; /* Un rojo más brillante al pasar el mouse */
+}
+
+/* ESTILO 2: EVENTOS (Botón Sólido Grande) */
+.card-cta {
+    margin-top: auto;
+    background-color: #e63946; /* Fondo Rojo Sólido */
+    color: white !important;
+    padding: 12px 0; /* Un poco más alto para tocar */
+    width: 100%;     /* Ocupa todo el ancho */
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: 1px solid #e63946;
+    display: block; /* Asegura que sea un bloque */
+    text-decoration: none;
+}
+
+.card-cta:hover {
+    background-color: transparent; /* Se vuelve transparente */
+    color: #e63946 !important; /* Letras rojas */
+    box-shadow: 0 0 15px rgba(230, 57, 70, 0.4); /* Resplandor */
+}
+
+/* ============================================================
+   RESPONSIVO - BLOG / NOTICIAS / EVENTOS
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .news-grid,
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-image {
+        height: 160px;
+    }
+
+    .card-content {
+        padding: 18px;
+    }
+
+    .card-title {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .card-content {
+        padding: 15px;
+    }
+
+    .card-excerpt {
+        font-size: 0.88rem;
+    }
+
+    .card-cta {
+        padding: 14px 0;
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================================
+   BADGES "EN VIVO / ESTA SEMANA" (Sugerencia 5)
+   ============================================================ */
+
+.card-image {
+    position: relative;
+}
+
+.event-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    z-index: 1;
+    animation: pulseBadge 2s ease-in-out infinite;
+}
+
+.badge-hoy {
+    background: #e63946;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(230,57,70,0.6);
+}
+
+.badge-semana {
+    background: #ff8c00;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255,140,0,0.45);
+}
+
+@keyframes pulseBadge {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.05); opacity: 0.9; }
+}
+
+/* Tarjeta resaltada si es hoy */
+.event-card.event-live {
+    border-color: #e63946 !important;
+    box-shadow: 0 0 20px rgba(230,57,70,0.25);
+}
+
+.event-card.event-soon {
+    border-color: #ff8c00;
+}
+
+/* ============================================================
+   PAGE HEADER MEJORADO (para noticias y eventos)
+   ============================================================ */
+
+.page-header {
+    margin-bottom: 40px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 30px;
+    position: relative;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: #e63946;
+}
+
+.page-header-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #e63946;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.page-header-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.15;
+}
+
+.page-header-sub {
+    color: #888;
+    font-size: 1rem;
+}
+
+/* ============================================================
+   DETALLE DE EVENTO MEJORADO (Sugerencia 3)
+   ============================================================ */
+
+.event-detail-hero {
+    background: linear-gradient(135deg, var(--hero-color, #333) 0%, #0f0f0f 70%);
+    border-radius: 14px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    position: relative;
+    min-height: 240px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.event-detail-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.75) 100%);
+}
+
+/* Portada real del evento: se Absolute para quedar bajo el degradado ::after
+   y bajo .event-detail-hero-inner (z-index 1). */
+.event-hero-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.event-detail-hero-inner {
+    position: relative;
+    z-index: 1;
+    padding: 35px 35px 30px;
+    width: 100%;
+}
+
+.detail-tipo-tag {
+    display: inline-block;
+    background: rgba(227,28,37,0.85);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.event-detail-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.event-detail-desc {
+    color: rgba(255,255,255,0.75);
+    font-size: 1rem;
+    max-width: 600px;
+}
+
+.detail-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 4px 14px;
+    border-radius: 50px;
+    margin-bottom: 12px;
+    animation: pulseBadge 2s ease-in-out infinite;
+}
+
+.event-detail-meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-left: 4px solid #e63946;
+    border-radius: 10px;
+    padding: 20px 28px;
+    margin-bottom: 30px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.meta-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.meta-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #555;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.meta-item strong {
+    color: #fff;
+    font-size: 1rem;
+}
+
+.event-detail-body {
+    background: #161616;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 30px;
+    color: #ccc;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.event-detail-body h2 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.detail-pending {
+    color: #555;
+    margin-top: 15px;
+}
+
+.event-detail-cta {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.detail-cta-btn {
+    display: inline-block;
+    background: #e63946;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 40px;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+}
+
+.detail-cta-btn:hover {
+    background: transparent;
+    color: #e63946;
+    box-shadow: 0 0 20px rgba(227,28,37,0.3), inset 0 0 0 1px #e63946;
+}
+
+.detail-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+}
+
+.back-link-btn {
+    display: inline-block;
+    margin-top: 20px;
+    color: #e63946;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .event-detail-hero { min-height: 180px; }
+    .event-detail-hero-inner { padding: 20px; }
+    .event-detail-title { font-size: 1.5rem; }
+    .event-detail-meta-bar { flex-direction: column; gap: 14px; padding: 16px 20px; }
+    .page-header-title { font-size: 2rem; }
+}
+
+/* ============================================================
+   BUSCADOR LOCAL (Noticias & Eventos)
+   ============================================================ */
+
+.local-search-wrapper {
+    margin: 0 auto 32px;
+    max-width: 560px;
+}
+
+.local-search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-2, #1A1A1A);
+    border: 1px solid var(--border-2, #2A2A2A);
+    border-radius: 50px;
+    padding: 10px 18px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.local-search-box:focus-within {
+    border-color: var(--scarlet, #E31C25);
+    box-shadow: 0 0 0 3px rgba(227,28,37,0.12);
+}
+
+.local-search-icon {
+    color: var(--antler, #888);
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.local-search-box:focus-within .local-search-icon {
+    color: var(--scarlet, #E31C25);
+}
+
+#localSearchInput {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-1, #F0F0F0);
+    font-size: 0.95rem;
+    width: 100%;
+    font-family: inherit;
+}
+
+#localSearchInput::placeholder {
+    color: var(--text-muted, #555);
+}
+
+.local-search-clear {
+    background: none;
+    border: none;
+    color: var(--antler, #888);
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    padding: 0;
+    flex-shrink: 0;
+    transition: color 0.2s, background 0.2s;
+}
+
+.local-search-clear:hover {
+    color: #fff;
+    background: var(--surface-3, #222);
+}
+
+.search-no-results {
+    text-align: center;
+    color: var(--text-muted, #555);
+    padding: 60px 0;
+    font-size: 1rem;
+    grid-column: 1 / -1;
+}
+
+/* Fecha en tarjeta de noticia */
+.card-date {
+    font-size: 0.78rem;
+    color: var(--antler, #888);
+    margin-bottom: 10px;
+    display: block;
+}

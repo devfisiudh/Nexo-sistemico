@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "tipo": "academico",
+    "categoria": "INFRAESTRUCTURA",
+    "fecha": "29 Dic, 2025",
+    "titulo": "Nuevos laboratorios de redes Cisco",
+    "resumen": "La facultad inaugura equipos de última generación para las prácticas de certificación CCNA en el pabellón B.",
+    "color_placeholder": "#161616"
+  },
+  {
+    "id": 2,
+    "tipo": "evento",
+    "categoria": "COMPETENCIA",
+    "fecha": "28 Dic, 2025",
+    "titulo": "Hackathon UDH 2026: Inscripciones abiertas",
+    "resumen": "Prepara tu equipo de 5 personas. 48 horas de programación ininterrumpida. Premios en efectivo.",
+    "color_placeholder": "#a4161a"
+  },
+  {
+    "id": 3,
+    "tipo": "social",
+    "categoria": "COMUNIDAD",
+    "fecha": "25 Dic, 2025",
+    "titulo": "Debate: ¿Java o Python?",
+    "resumen": "La eterna discusión en los pasillos de la FISI. Entrevistamos a docentes y alumnos de últimos ciclos.",
+    "color_placeholder": "#7f5539"
+  },
+  {
+    "id": 4,
+    "tipo": "academico",
+    "categoria": "AVISO",
+    "fecha": "20 Dic, 2025",
+    "titulo": "Suspensión de servicios por mantenimiento",
+    "resumen": "El Aula Virtual y el ERP entrarán en mantenimiento programado este fin de semana. Toma tus precauciones.",
+    "color_placeholder": "#333333"
+  },
+  {
+    "id": 5,
+    "tipo": "proyecto",
+    "categoria": "INNOVACIÓN",
+    "fecha": "30 Dic, 2025",
+    "titulo": "UDH presenta plan piloto 'Huánuco Smart City'",
+    "resumen": "Docentes y alumnos de la FISI proponen sistema IoT para monitoreo de tráfico en Amarilis y Pillco Marca.",
+    "color_placeholder": "#0077b6"
+  },
+  {
+    "id": 6,
+    "tipo": "social",
+    "categoria": "E-SPORTS",
+    "fecha": "18 Dic, 2025",
+    "titulo": "Torneo Inter-códigos: Dota 2 y Valorant",
+    "resumen": "Se abre la convocatoria para el torneo anual de la facultad. La final será transmitida en el auditorio.",
+    "color_placeholder": "#6a040f"
+  }
+]

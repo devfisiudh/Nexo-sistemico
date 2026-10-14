@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
+
+    <title>Administración | Nexo Sistémico</title>
+
+    <link
+        rel="stylesheet"
+        href="./css/admin.css"
+    >
+</head>
+
+<body>
+
+    <main class="login-page">
+
+        <section class="login-card">
+
+            <div class="login-header">
+                <span class="login-label">
+                    NEXO SISTÉMICO
+                </span>
+
+                <h1>Administración</h1>
+
+                <p>
+                    Acceso exclusivo para administradores
+                    del portal.
+                </p>
+            </div>
+
+
+            <form id="login-form">
+
+                <div class="form-group">
+                    <label for="email">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password">
+                        Contraseña
+                    </label>
+
+                    <input
+                        id="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+
+                <p
+                    id="login-error"
+                    class="login-error"
+                    role="alert"
+                    hidden
+                ></p>
+
+
+                <button
+                    id="login-button"
+                    type="submit"
+                >
+                    Iniciar sesión
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script
+        type="module"
+        src="./js/auth.js"
+    ></script>
+
+</body>
+</html>
