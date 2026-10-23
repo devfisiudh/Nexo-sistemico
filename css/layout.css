@@ -220,7 +220,6 @@
 
 /* Candado de administración — discreto, abajo a la derecha del footer */
 .admin-lock {
-    margin-left: auto;
     display: inline-flex;
     align-items: center;
     opacity: 0.35;
