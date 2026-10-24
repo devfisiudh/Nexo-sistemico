@@ -120,14 +120,21 @@ export function formatearRango(inicio, fin) {
 }
 
 /**
- * Traduce los dos ENUM independientes (estado editorial + ventana de
- * vigencia) a un único estado derivado que el administrador pueda leer sin
- * consultar la política RLS.
+ * Traduce el estado editorial + la ventana de vigencia a un único estado
+ * derivado que el administrador pueda leer sin consultar la política RLS.
  *
- * El problema que resuelve: `estado = 'PUBLICADO'` NO significa "visible en
- * el portal". Un anuncio con fecha_inicio mañana, o un evento cuya fecha_fin ya
- * pasó, están PUBLICADOS pero la política `publico_*_publicados` los excluye.
- * Sin esta derivación el panel miente.
+ * Modelo vigente (sql/04_estado_programado.sql):
+ *
+ *   BORRADOR    oculto siempre
+ *   PROGRAMADO  el portal lo espera: se publica solo cuando la fecha llega
+ *   PUBLICADO   visible YA, aunque la fecha de inicio sea futura
+ *   ARCHIVADO   oculto
+ *
+ * La ventana de vigencia sigue mandando al final: un PUBLICADO cuya fecha_fin
+ * ya pasó aparece como Vencido porque la política pública lo excluye.
+ *
+ * El problema que resuelve: guardar en la base no es lo mismo que verse en el
+ * portal, y el panel no debe mentir al respecto.
  *
  * @param {{estado: string, fechaInicio?: string|null, fechaFin?: string|null}} datos
  * @returns {{clave: string, etiqueta: string, clase: string, publicable: boolean}}
@@ -138,11 +145,6 @@ export function derivarVisibilidad({ estado, fechaInicio, fechaFin } = {}) {
     if (estado === 'ARCHIVADO') return VISIBILIDAD.ARCHIVADO;
     if (estado === 'BORRADOR') return VISIBILIDAD.BORRADOR;
 
-    // Estado inesperado (typo, valor nuevo del ENUM): no inventar visibilidad.
-    if (estado !== 'PUBLICADO') {
-        return { clave: 'DESCONOCIDO', etiqueta: estado || '—', clase: 'archivado', publicable: false };
-    }
-
     const inicioMs = fechaInicio ? new Date(fechaInicio).getTime() : NaN;
     const finMs = fechaFin ? new Date(fechaFin).getTime() : NaN;
 
@@ -150,10 +152,21 @@ export function derivarVisibilidad({ estado, fechaInicio, fechaFin } = {}) {
     const tieneFin = !Number.isNaN(finMs);
     const ahora = Date.now();
 
-    // Programado: aún no empieza. Si no hay fecha de inicio, se asume visible.
-    if (tieneInicio && inicioMs > ahora) return VISIBILIDAD.PROGRAMADO;
+    // Programado y aún sin llegar: el portal lo espera. Sin fecha (o ya
+    // pasada) el PROGRAMADO se publica solo, así que cuenta como vigente.
+    if (estado === 'PROGRAMADO') {
+        return (tieneInicio && inicioMs > ahora)
+            ? VISIBILIDAD.PROGRAMADO
+            : VISIBILIDAD.VIGENTE;
+    }
 
-    // Vencido: la ventana ya se cerró.
+    // Estado inesperado (typo, valor nuevo del ENUM): no inventar visibilidad.
+    if (estado !== 'PUBLICADO') {
+        return { clave: 'DESCONOCIDO', etiqueta: estado || '—', clase: 'status-archivado', publicable: false };
+    }
+
+    // PUBLICADO: la fecha de INICIO ya no lo bloquea (publicar antes de la
+    // fecha de validez es una decisión válida). Solo vence por fecha_fin.
     if (tieneFin && finMs < ahora) return VISIBILIDAD.VENCIDO;
 
     return VISIBILIDAD.VIGENTE;
@@ -162,14 +175,14 @@ export function derivarVisibilidad({ estado, fechaInicio, fechaFin } = {}) {
 
 const VISIBILIDAD = {
     VIGENTE:    { clave: 'VIGENTE',    etiqueta: 'Publicado',   clase: 'status-publicado',  publicable: true },
-    PROGRAMADO: { clave: 'PROGRAMADO', etiqueta: 'Por publicar', clase: 'status-programado', publicable: false },
+    PROGRAMADO: { clave: 'PROGRAMADO', etiqueta: 'Programado',  clase: 'status-programado', publicable: false },
     VENCIDO:    { clave: 'VENCIDO',    etiqueta: 'Vencido',     clase: 'status-vencido',    publicable: false },
     BORRADOR:   { clave: 'BORRADOR',   etiqueta: 'Borrador',    clase: 'status-borrador',    publicable: false },
     ARCHIVADO:  { clave: 'ARCHIVADO',  etiqueta: 'Archivado',   clase: 'status-archivado',  publicable: false }
 };
 
 /** Texto explicativo del tooltip, según el caso. */
-export function explicarVisibilidad(visibilidad, { fechaInicio, fechaFin } = {}) {
+export function explicarVisibilidad(visibilidad, { estado, fechaInicio, fechaFin } = {}) {
 
     const detalle = [];
 
@@ -180,9 +193,16 @@ export function explicarVisibilidad(visibilidad, { fechaInicio, fechaFin } = {})
 
     switch (visibilidad.clave) {
         case 'VIGENTE':
+            // PUBLICADO con fecha futura: se ve igual, y conviene decirlo.
+            if (estado === 'PUBLICADO' && fechaInicio && new Date(fechaInicio).getTime() > Date.now()) {
+                return `Estado PUBLICADO: se muestra ya aunque la fecha de inicio sea ${formatearFecha(fechaInicio)}.`;
+            }
+            if (estado === 'PROGRAMADO') {
+                return `Programado y ya en fecha${ventana}: se publicó automáticamente.`;
+            }
             return `Visible en el portal ahora${ventana}.`;
         case 'PROGRAMADO':
-            return `Publicado, pero el portal todavía lo oculta: empieza el ${formatearFecha(fechaInicio)}.`;
+            return `Programado: el portal lo publicará automáticamente el ${formatearFecha(fechaInicio)}.`;
         case 'VENCIDO':
             return `Terminó el ${formatearFecha(fechaFin)}: el portal ya no lo muestra.`;
         case 'BORRADOR':
@@ -204,6 +224,7 @@ export function formatearRol(rol) {
 export function formatearEstado(estado) {
     const estados = {
         BORRADOR: 'Borrador',
+        PROGRAMADO: 'Programado',
         PUBLICADO: 'Publicado',
         ARCHIVADO: 'Archivado'
     };

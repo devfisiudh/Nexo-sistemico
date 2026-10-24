@@ -62,3 +62,33 @@
     outline: 2px solid #a4161a;
     outline-offset: 2px;
 }
+
+
+/* ── Cambio rápido de estado en los listados ───────────────────────────────
+   El select va junto al enlace "Editar". Compacto a propósito: no compite
+   con la fila, solo deja cambiar de estado sin abrir el editor. */
+
+.table-actions .estado-rapido {
+    width: auto;
+    margin-right: 10px;
+    padding: 5px 6px;
+    font-size: 12px;
+    border: 1px solid #d4d4d4;
+    border-radius: 6px;
+    background: #fff;
+    color: #333;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.table-actions .estado-rapido:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+
+/* Mensaje de éxito/error del cambio rápido: debe separarse de la tabla. */
+
+#listado-mensaje:not([hidden]) {
+    margin: 0 0 14px;
+}

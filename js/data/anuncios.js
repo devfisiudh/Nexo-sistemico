@@ -30,6 +30,11 @@ const CAMPOS = `
 
 const RUTA_LEGACY = '../data/anuncios.json';
 
+// Estados que el portal acepta mostrar. RLS aplica además la ventana de
+// fechas (sql/04_estado_programado.sql): un PROGRAMADO sin fecha llegada no
+// vuelve por mucho que lo pidamos aquí.
+const ESTADOS_VISIBLES = ['PUBLICADO', 'PROGRAMADO'];
+
 const TIMEOUT_MS = 5000;
 
 
@@ -48,7 +53,7 @@ export async function listarAnuncios({ limite = 12 } = {}) {
             supabase
                 .from('anuncios')
                 .select(CAMPOS)
-                .eq('estado', 'PUBLICADO')
+                .in('estado', ESTADOS_VISIBLES)
                 // El orden va por created_at, NO por fecha_inicio: esa columna
                 // controla la visibilidad, no la recencia. Ordenar por ella
                 // mezcla un aviso vigente desde ayer con uno sin fecha, y deja

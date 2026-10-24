@@ -152,7 +152,7 @@ const insigniaEstado = (estado) => (
     `<span class="status-badge ${CLASE_ESTADO[estado] ?? 'status-neutro'}">${esc(formatearEstado(estado))}</span>`
 );
 
-// Estado derivado (Publicado / Por publicar / Vencido): el ENUM crudo miente
+// Estado derivado (Publicado / Programado / Vencido): el ENUM crudo miente
 // porque no tiene en cuenta la ventana de vigencia.
 const insigniaVisibilidad = (fila) => {
     const visibilidad = derivarVisibilidad({
@@ -162,6 +162,7 @@ const insigniaVisibilidad = (fila) => {
     });
 
     const ayuda = explicarVisibilidad(visibilidad, {
+        estado: fila.estado,
         fechaInicio: fila.fecha_inicio,
         fechaFin: fila.fecha_fin
     });
@@ -688,7 +689,7 @@ async function cargarEstadisticas(raiz) {
 async function cargarUltimasNoticias(raiz) {
     const { data, error } = await supabase
         .from('noticias')
-        .select('id, titulo, estado, created_at')
+        .select('id, titulo, estado, fecha_publicacion, created_at')
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -712,7 +713,7 @@ async function cargarUltimasNoticias(raiz) {
             </div>
 
             <div class="content-item-actions">
-                ${insigniaEstado(noticia.estado)}
+                ${insigniaVisibilidad({ estado: noticia.estado, fecha_inicio: noticia.fecha_publicacion })}
                 <a
                     class="table-action-link"
                     href="#/noticias/editar/${esc(noticia.id)}"
@@ -771,6 +772,13 @@ async function vistaListado(config) {
             </div>
         </section>
 
+        <div
+            id="listado-mensaje"
+            class="editor-message"
+            role="status"
+            hidden
+        ></div>
+
         <section class="admin-table-card">
             <div class="admin-table-wrapper">
                 <table class="admin-table">
@@ -788,10 +796,17 @@ async function vistaListado(config) {
 
     const tbody = el.querySelector('tbody');
     const buscador = el.querySelector('input[type="search"]');
+    const mensajeEl = $('#listado-mensaje', el);
 
     let datos = [];
     let filtro = config.filtros[0].clave;
     let cargado = false;
+
+    const mostrarMensaje = (texto, tipo) => {
+        mensajeEl.textContent = texto;
+        mensajeEl.className = `editor-message editor-message-${tipo}`;
+        mensajeEl.hidden = false;
+    };
 
     function render() {
         if (!cargado) return;
@@ -815,14 +830,71 @@ async function vistaListado(config) {
 
         filas.forEach((fila) => {
             const tr = document.createElement('tr');
+
+            // Cambio de estado sin entrar al editor. El derivado (Publicado /
+            // Programado / Vencido) se recalcula al refrescar la tabla.
+            const selectorEstado = config.edicionRapida
+                ? `<select
+                        class="estado-rapido"
+                        data-id="${esc(fila.id)}"
+                        aria-label="Cambiar estado de la publicación"
+                    >${opcionesEstado()}</select>`
+                : '';
+
             tr.innerHTML = config.columnas.map((columna) => columna.celda(fila)).join('')
-                + `<td class="table-actions"><a class="table-action-link" href="#/${config.seccion}/editar/${esc(fila.id)}">Editar</a></td>`;
+                + `<td class="table-actions">${selectorEstado}<a class="table-action-link" href="#/${config.seccion}/editar/${esc(fila.id)}">Editar</a></td>`;
+
+            const rapido = tr.querySelector('.estado-rapido');
+            if (rapido) rapido.value = fila.estado ?? 'BORRADOR';
+
             fragmento.appendChild(tr);
         });
 
         tbody.innerHTML = '';
         tbody.appendChild(fragmento);
     }
+
+    // Guardar el cambio directo desde la tabla.
+    tbody.addEventListener('change', async (evento) => {
+        const rapido = evento.target.closest?.('.estado-rapido');
+        if (!rapido) return;
+
+        const id = rapido.dataset.id;
+        const fila = datos.find((d) => String(d.id) === String(id));
+        if (!fila) return;
+
+        const nuevo = rapido.value;
+        const anterior = fila.estado;
+        if (nuevo === anterior) return;
+
+        rapido.disabled = true;
+
+        const { error } = await supabase
+            .from(config.tabla)
+            .update({ estado: nuevo })
+            .eq('id', id);
+
+        rapido.disabled = false;
+
+        if (error) {
+            console.error('Cambio rápido de estado:', error);
+
+            if (error.code === '22P02') {
+                mostrarMensaje('El estado «Programado» todavía no existe en la base: aplica antes sql/04_estado_programado.sql en Supabase.', 'error');
+            } else if (error.code === '23514') {
+                mostrarMensaje('La base rechazó el cambio: revisa las fechas y la composición del registro.', 'error');
+            } else {
+                mostrarMensaje('No se pudo cambiar el estado. Vuelve a intentarlo.', 'error');
+            }
+
+            rapido.value = anterior;
+            return;
+        }
+
+        fila.estado = nuevo;
+        mostrarMensaje(`Estado cambiado a «${formatearEstado(nuevo)}».`, 'success');
+        render();
+    });
 
     buscador.addEventListener('input', render);
 
@@ -860,6 +932,7 @@ async function vistaListado(config) {
 const FILTROS_NOTICIAS = [
     { clave: 'TODOS', etiqueta: 'Todas' },
     { clave: 'PUBLICADO', etiqueta: 'Publicadas' },
+    { clave: 'PROGRAMADO', etiqueta: 'Programadas' },
     { clave: 'BORRADOR', etiqueta: 'Borradores' },
     { clave: 'ARCHIVADO', etiqueta: 'Archivadas' }
 ];
@@ -867,6 +940,7 @@ const FILTROS_NOTICIAS = [
 const FILTROS_MASCULINO = [
     { clave: 'TODOS', etiqueta: 'Todos' },
     { clave: 'PUBLICADO', etiqueta: 'Publicados' },
+    { clave: 'PROGRAMADO', etiqueta: 'Programados' },
     { clave: 'BORRADOR', etiqueta: 'Borradores' },
     { clave: 'ARCHIVADO', etiqueta: 'Archivados' }
 ];
@@ -891,6 +965,7 @@ const LISTADOS = {
         placeholderBusqueda: 'Buscar por título...',
         tabla: 'noticias',
         campos: 'id, titulo, slug, categoria, estado, fecha_publicacion, created_at',
+        edicionRapida: true,
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_NOTICIAS,
         columnas: [
@@ -904,7 +979,7 @@ const LISTADOS = {
             },
             {
                 titulo: 'Estado',
-                celda: (fila) => `<td>${insigniaEstado(fila.estado)}</td>`
+                celda: (fila) => `<td>${insigniaVisibilidad({ estado: fila.estado, fecha_inicio: fila.fecha_publicacion })}</td>`
             },
             {
                 titulo: 'Fecha',
@@ -922,6 +997,7 @@ const LISTADOS = {
         placeholderBusqueda: 'Buscar por título o lugar...',
         tabla: 'eventos',
         campos: 'id, titulo, slug, resumen, lugar, fecha_inicio, fecha_fin, estado, url_inscripcion, created_at',
+        edicionRapida: true,
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_MASCULINO,
         columnas: [
@@ -957,6 +1033,7 @@ const LISTADOS = {
         placeholderBusqueda: 'Buscar por título o texto...',
         tabla: 'anuncios',
         campos: 'id, titulo, tipo, texto, modo, fecha_inicio, fecha_fin, estado, destino_tipo, created_at',
+        edicionRapida: true,
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_MASCULINO,
         columnas: [
@@ -1072,8 +1149,102 @@ function crearEsqueleto({ seccion, plural, etiqueta, singular, editando, ayuda, 
 function opcionesEstado() {
     return `
         <option value="BORRADOR">Borrador</option>
+        <option value="PROGRAMADO">Programado</option>
         <option value="PUBLICADO">Publicado</option>
         <option value="ARCHIVADO">Archivado</option>`;
+}
+
+
+/**
+ * La frase de ayuda cita el campo de fecha por su etiqueta visible, que no
+ * siempre empieza por "Fecha" (en anuncios es "Visible desde"). Si no la
+ * trae, se cita entrecomillada como "la fecha «Visible desde»" para que la
+ * frase siga leyéndose bien.
+ */
+function comoFecha(etiqueta) {
+    const minusculas = etiqueta.toLowerCase();
+    return minusculas.includes('fecha')
+        ? `la ${minusculas}`
+        : `la fecha «${etiqueta}»`;
+}
+
+
+/**
+ * Texto bajo el selector de estado: dice exactamente qué pasará al guardar,
+ * cruzando estado + fechas.
+ *
+ *   PUBLICADO  + fecha futura → se ve YA (publicar antes de la fecha de
+ *                               validez es una decisión válida)
+ *   PROGRAMADO + fecha futura → el portal lo espera; se publica solo
+ *
+ * `selectoresFechas` apunta a los inputs datetime del editor. Un campo
+ * deshabilitado es una casilla "indefinido" marcada y cuenta como sin fecha.
+ *
+ * Devuelve la función de refresco por si los datos cargan después del cableado.
+ */
+function conectarAyudaEstado(raiz, selectoresFechas) {
+
+    const select = $('#estado', raiz);
+    const ayuda = $('#estado-ayuda', raiz);
+
+    if (!select || !ayuda) return () => {};
+
+    const campos = selectoresFechas
+        .map((selector) => $(selector, raiz))
+        .filter(Boolean);
+
+    function describir() {
+
+        const estado = select.value;
+
+        const fechas = campos
+            .map((campo) => ({
+                valor: campo.disabled ? null : campo.value,
+                // Se guarda con su mayúscula original: comoFecha() decide cómo
+                // bajarla a minúsculas según la frase.
+                etiqueta: (campo.closest('.form-group')?.querySelector('label')?.textContent ?? '').trim()
+            }))
+            .filter((entrada) => entrada.valor);
+
+        const futuras = fechas.filter(
+            (entrada) => new Date(entrada.valor).getTime() > Date.now()
+        );
+
+        if (estado === 'BORRADOR') {
+            ayuda.textContent = 'Oculto en el portal hasta que lo publiques.';
+            return;
+        }
+
+        if (estado === 'ARCHIVADO') {
+            ayuda.textContent = 'Oculto en el portal. Puedes volver a publicarlo más adelante.';
+            return;
+        }
+
+        if (estado === 'PUBLICADO') {
+            ayuda.textContent = futuras.length
+                ? `Se mostrará desde que guardes, aunque ${futuras.map((f) => `${comoFecha(f.etiqueta)} sea futura`).join(' y ')}.`
+                : 'Se mostrará en el portal desde que guardes.';
+            return;
+        }
+
+        if (estado === 'PROGRAMADO') {
+            if (futuras.length) {
+                ayuda.textContent = `El portal lo publicará solo el ${formatearFecha(futuras[0].valor)}.`;
+            } else {
+                ayuda.textContent = 'Sin fecha futura: se publicará en cuanto guardes.';
+            }
+        }
+    }
+
+    select.addEventListener('change', describir);
+    campos.forEach((campo) => {
+        campo.addEventListener('input', describir);
+        campo.addEventListener('change', describir);
+    });
+
+    describir();
+
+    return describir;
 }
 
 
@@ -1214,6 +1385,7 @@ async function vistaNoticia(id) {
                     <select id="estado" name="estado">
                         ${opcionesEstado()}
                     </select>
+                    <small class="form-help" id="estado-ayuda"></small>
                 </div>
 
                 <div class="form-group">
@@ -1235,7 +1407,9 @@ async function vistaNoticia(id) {
                         type="datetime-local"
                     >
                     <small class="form-help">
-                        Si publicas y la dejas vacía, se usará la fecha actual.
+                        Si la dejas vacía y guardas como Publicada, se usará la
+                        fecha actual. Con estado Programado, es la fecha en la
+                        que se publicará sola.
                     </small>
                 </div>
 
@@ -1253,6 +1427,7 @@ async function vistaNoticia(id) {
     const portada = prepararPortada(el, mensajes.mostrar);
     const slug = prepararSlug(el);
     const actualizarContador = prepararContador(el, '#resumen', '#resumen-counter', 600);
+    const describirEstado = conectarAyudaEstado(el, ['#fecha-publicacion']);
 
     if (editando) {
         const registro = await cargarRegistro(
@@ -1265,6 +1440,7 @@ async function vistaNoticia(id) {
         portada.aplicarUrl(registro.imagen_url);
         slug.fijarManual();
         actualizarContador();
+        describirEstado();
     }
 
     conectarGuardado({
@@ -1457,6 +1633,7 @@ async function vistaEvento(id) {
                     <select id="estado" name="estado">
                         ${opcionesEstado()}
                     </select>
+                    <small class="form-help" id="estado-ayuda"></small>
                 </div>
 
                 <div class="form-group">
@@ -1494,6 +1671,8 @@ async function vistaEvento(id) {
         $('#fecha-fin-indefinido', el)
     );
 
+    const describirEstado = conectarAyudaEstado(el, ['#fecha-inicio', '#fecha-fin']);
+
     if (editando) {
         const registro = await cargarRegistro(
             'eventos',
@@ -1506,6 +1685,7 @@ async function vistaEvento(id) {
         portada.aplicarUrl(registro.imagen_url);
         slug.fijarManual();
         actualizarContador();
+        describirEstado();
     }
 
     conectarGuardado({
@@ -1738,6 +1918,7 @@ async function vistaAnuncio(id) {
                     <select id="estado" name="estado">
                         ${opcionesEstado()}
                     </select>
+                    <small class="form-help" id="estado-ayuda"></small>
                 </div>
 
                 <div class="editor-divider"></div>
@@ -1802,6 +1983,8 @@ async function vistaAnuncio(id) {
     $('#modo', el).addEventListener('change', sincronizarModo);
     $('#destino-tipo', el).addEventListener('change', sincronizarDestino);
 
+    const describirEstado = conectarAyudaEstado(el, ['#fecha-inicio', '#fecha-fin']);
+
     if (editando) {
         const registro = await cargarRegistro(
             'anuncios',
@@ -1818,6 +2001,7 @@ async function vistaAnuncio(id) {
 
     sincronizarModo();
     sincronizarDestino();
+    describirEstado();
 
     conectarGuardado({
         el,

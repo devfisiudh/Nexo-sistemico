@@ -39,6 +39,11 @@ const CAMPOS_DETALLE = `${CAMPOS}`;
 
 const RUTA_LEGACY = '../data/eventos.json';
 
+// Estados que el portal acepta mostrar. RLS aplica además la ventana de
+// fechas (sql/04_estado_programado.sql): un PROGRAMADO sin fecha llegada no
+// vuelve por mucho que lo pidamos aquí.
+const ESTADOS_VISIBLES = ['PUBLICADO', 'PROGRAMADO'];
+
 const TIMEOUT_MS = 5000;
 
 
@@ -57,7 +62,7 @@ export async function listarEventos({ limite = 6 } = {}) {
             supabase
                 .from('eventos')
                 .select(CAMPOS)
-                .eq('estado', 'PUBLICADO')
+                .in('estado', ESTADOS_VISIBLES)
                 .order('fecha_inicio', {
                     ascending: true,
                     nullsfirst: false
@@ -112,7 +117,7 @@ export async function obtenerEventoPorSlug(slug) {
                 .from('eventos')
                 .select(CAMPOS_DETALLE)
                 .eq('slug', slug)
-                .eq('estado', 'PUBLICADO')
+                .in('estado', ESTADOS_VISIBLES)
                 .maybeSingle()
         );
 

@@ -1,8 +1,9 @@
 // js/data/noticias.js — Capa de acceso a datos de Noticias.
 //
-// El portal público lee de Postgres vía PostgREST con la clave publishable.
-// La lectura anónima está acotada por RLS a `estado = 'PUBLICADO'`;
-// el filtro `.eq()` de abajo es defensa en profundidad, no la única barrera.
+// El portal lee de Postgres vía PostgREST con la clave publishable.
+// La lectura anónima está acotada por RLS: PUBLICADO, o PROGRAMADO cuando la
+// fecha de publicación ya llegó; el filtro `.in()` de abajo es defensa en
+// profundidad, no la única barrera.
 //
 // Mientras la tabla no esté migrada, hay respaldo a `data/noticias.json`.
 // Ese respaldo es transitorio: cuando verifiquemos la migración se borran
@@ -31,6 +32,11 @@ const CAMPOS_DETALLE = `${CAMPOS},
 
 const RUTA_LEGACY = '../data/noticias.json';
 
+// Estados que el portal acepta mostrar. RLS aplica además la ventana de
+// fechas (sql/04_estado_programado.sql): un PROGRAMADO sin fecha llegada no
+// vuelve por mucho que lo pidamos aquí.
+const ESTADOS_VISIBLES = ['PUBLICADO', 'PROGRAMADO'];
+
 // Si Postgres no responde a tiempo no dejamos al visitante mirando el spinner:
 // caemos al respaldo local en su lugar.
 const TIMEOUT_MS = 5000;
@@ -51,7 +57,7 @@ export async function listarNoticias({ limite = 6 } = {}) {
             supabase
                 .from('noticias')
                 .select(CAMPOS)
-                .eq('estado', 'PUBLICADO')
+                .in('estado', ESTADOS_VISIBLES)
                 .order('fecha_publicacion', {
                     ascending: false,
                     nullsfirst: false
@@ -106,7 +112,7 @@ export async function obtenerNoticiaPorSlug(slug) {
                 .from('noticias')
                 .select(CAMPOS_DETALLE)
                 .eq('slug', slug)
-                .eq('estado', 'PUBLICADO')
+                .in('estado', ESTADOS_VISIBLES)
                 .maybeSingle()
         );
 

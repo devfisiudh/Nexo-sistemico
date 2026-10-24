@@ -132,8 +132,23 @@ Detalles que conviene conocer:
   PORTADA     Solo JPG, PNG o WEBP, hasta 5 MB. Las imágenes van a Storage en
               noticias/{id}/, eventos/{id}/ y anuncios/{id}/.
 
-  VISIBILIDAD Un evento o anuncio "Vencido" sigue en el panel pero ya no
-              aparece en el portal. Para recuperarlo, amplía la fecha de fin.
+  ESTADOS     Cada registro tiene un estado editorial. El panel muestra debajo
+              del selector qué pasará exactamente al guardar:
+                · BORRADOR    oculto siempre
+                · PROGRAMADO  el portal lo publica solo cuando la fecha llega;
+                              si la fecha está vacía o ya pasó, se publica al
+                              guardar
+                · PUBLICADO   visible YA, aunque la fecha de inicio sea futura
+                              (publicar "antes de la fecha de validez")
+                · ARCHIVADO   oculto; se conserva por si hay que recuperarlo
+
+              En los listados de noticias, eventos y anuncios el estado se
+              puede cambiar sin abrir el editor, con el select de la columna
+              "Acciones".
+
+  VISIBILIDAD Un evento o anuncio "Vencido" (fecha_fin pasada) sigue en el
+              panel pero ya no aparece en el portal. Para recuperarlo, amplía
+              la fecha de fin o cámbialo a BORRADOR.
 
 --------------------------------------------------------------------------------
 5. ESTRUCTURA DE LA BASE
@@ -162,17 +177,22 @@ Ambas son SECURITY DEFINER con search_path vacío.
 
 Bucket: portal-publico, público, 5 MB, solo image/jpeg, image/png, image/webp.
 
-Reglas de lectura pública (las tres tablas):
+Reglas de lectura pública (tras sql/04_estado_programado.sql):
 
-  noticias  estado = PUBLICADO AND fecha_publicacion <= now()
-  eventos   estado = PUBLICADO AND (fecha_fin IS NULL OR fecha_fin >= now())
-  anuncios  estado = PUBLICADO AND fecha_inicio <= now()
-                               AND fecha_fin   >= now()
+  noticias  estado = PUBLICADO
+            OR (estado = PROGRAMADO AND fecha_publicacion <= now())
+  eventos   (estado = PUBLICADO
+             OR (estado = PROGRAMADO AND fecha_inicio <= now()))
+            AND (fecha_fin IS NULL OR fecha_fin >= now())
+  anuncios  (estado = PUBLICADO
+             OR (estado = PROGRAMADO AND fecha_inicio <= now()))
+            AND (fecha_fin IS NULL OR fecha_fin >= now())
 
-Ojo: la regla de vigencia es INVERSA entre módulos, y es a propósito.
-  · Noticias y anuncios: no muestres lo que todavía no toca.
-  · Eventos: una agenda muestra lo que viene y oculta lo que ya terminó.
-Aplicar el patrón equivocado en eventos escondería justamente los próximos.
+PUBLICADO ya no lo bloquea la fecha de inicio: es la forma de publicar algo
+antes de que su ventana toque. PROGRAMADO es el "programar" explícito. La
+fecha de fin sigue venciendo por su cuenta (eventos y anuncios).
+Aplicar el patrón de noticias a eventos escondería los próximos: los eventos
+solo se ocultan cuando ya terminaron.
 
 --------------------------------------------------------------------------------
 6. MANTENIMIENTO DE LA BASE
@@ -187,6 +207,10 @@ se pueden volver a ejecutar sin romper nada.
                                 que respete la vigencia.
   02_anuncios_modos.sql         Añade modo, destino_tipo y sus CHECK.
   03_anuncios_autor_texto.sql   Añade autor_texto (ver sección 7).
+  04_estado_programado.sql      Añade el estado PROGRAMADO al ENUM y redefine
+                                las lecturas públicas: PUBLICADO se ve ya
+                                aunque la fecha sea futura; PROGRAMADO espera
+                                su fecha (ver sección 4).
 
 Cada archivo lleva en los comentarios por qué existe y qué pasaba antes.
 
