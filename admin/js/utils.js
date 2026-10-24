@@ -220,7 +220,6 @@ export function formatearRol(rol) {
     if (rol === 'EDITOR') return 'Editor';
     return rol ?? '—';
 }
-
 export function formatearEstado(estado) {
     const estados = {
         BORRADOR: 'Borrador',

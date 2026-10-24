@@ -92,7 +92,7 @@ const store = {
     async cargarPerfil(session) {
         const { data: perfil, error } = await supabase
             .from('perfiles_admin')
-            .select('id, nombre, rol, estado')
+            .select('id, nombre, rol, estado, es_maestro')
             .eq('id', session.user.id)
             .eq('estado', 'ACTIVO')
             .single();
@@ -146,6 +146,33 @@ const CLASE_ESTADO = {
     BORRADOR: 'status-borrador',
     PUBLICADO: 'status-publicado',
     ARCHIVADO: 'status-archivado'
+};
+
+// Jerarquía de acceso al panel (mayor número = más poder).
+const NIVEL_ACCESO = {
+    MAESTRO: 3,      // cuenta principal: gestiona administradores y editores
+    ADMINISTRADOR: 2, // gestiona solo editores
+    EDITOR: 1         // no gestiona a nadie
+};
+
+const rolANivel = (rol) => {
+    if (rol === 'ADMINISTRADOR') return NIVEL_ACCESO.ADMINISTRADOR;
+    if (rol === 'EDITOR') return NIVEL_ACCESO.EDITOR;
+    return NIVEL_ACCESO.EDITOR;
+};
+
+/**
+ * ¿Puede el rol `origen` gestionar (crear/editar/desactivar) al rol `destino`?
+ *   MAESTRO → ADMINISTRADOR y EDITOR
+ *   ADMINISTRADOR → solo EDITOR
+ *   EDITOR → nadie
+ */
+const puedeGestionarRol = (origen, destino) => {
+    const o = rolANivel(origen);
+    const d = rolANivel(destino);
+    if (o === NIVEL_ACCESO.MAESTRO) return d <= NIVEL_ACCESO.ADMINISTRADOR;
+    if (o === NIVEL_ACCESO.ADMINISTRADOR) return d === NIVEL_ACCESO.EDITOR;
+    return false;
 };
 
 const insigniaEstado = (estado) => (
@@ -212,11 +239,18 @@ const SECCIONES = {
         editar: 'Editar anuncio'
     },
     administradores: {
-        titulo: 'Administradores',
-        subtitulo: 'Perfiles con acceso al panel',
-        nuevo: 'Nuevo administrador',
-        editar: 'Editar administrador',
-        soloAdmin: true
+        titulo: 'Administración',
+        subtitulo: 'Gestión de perfiles de acceso al panel',
+        nuevo: 'Nuevo perfil',
+        editar: 'Editar perfil',
+        // Nivel mínimo requerido para entrar a esta sección:
+        //   3 = MAESTRO (cuenta principal), 2 = ADMINISTRADOR, 1 = EDITOR
+        nivelMinimo: 2
+    },
+    archivo: {
+        titulo: 'Archivo',
+        subtitulo: 'Publicaciones archivadas (historial)',
+        nivelMinimo: 1
     }
 };
 
@@ -239,7 +273,12 @@ function mostrarAplicacion() {
     if (perfil) {
         $('#admin-nombre').textContent = perfil.nombre;
         $('#admin-rol').textContent = formatearRol(perfil.rol);
-        $('#menu-administradores').hidden = perfil.rol !== 'ADMINISTRADOR';
+        // EDITOR no ve la sección Administración.
+        $('#menu-administradores').hidden = rolANivel(perfil.rol) < NIVEL_ACCESO.ADMINISTRADOR;
+        // Señal visual para la cuenta maestra.
+        if (perfil.es_maestro) {
+            $('#admin-rol').textContent = `${formatearRol(perfil.rol)} · Cuenta principal`;
+        }
     }
 }
 
@@ -954,6 +993,119 @@ const DESTINOS = {
     pagina: 'Página interna'
 };
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VISTA ARCHIVO — publicaciones archivadas de todas las tablas
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+async function vistaArchivo() {
+
+    const el = document.createElement('div');
+    el.className = 'view-enter';
+
+    el.innerHTML = `
+        <section class="page-toolbar">
+            <div>
+                <span class="section-label">HISTORIAL</span>
+                <h2>Archivo</h2>
+                <p>Publicaciones que han sido archivadas y ya no aparecen en el portal.</p>
+            </div>
+        </section>
+
+        <div id="editor-message" class="editor-message" role="status" hidden></div>
+
+        <section class="admin-table-card">
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Título</th>
+                            <th>Fecha</th>
+                            <th>Estado original</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>`;
+
+    const tbody = el.querySelector('tbody');
+    const mensajeEl = $('#editor-message', el);
+
+    const mostrarMensaje = (texto, tipo) => {
+        mensajeEl.textContent = texto;
+        mensajeEl.className = `editor-message editor-message-${tipo}`;
+        mensajeEl.hidden = false;
+    };
+
+    tbody.innerHTML = `<tr><td colspan="4" class="table-message">Cargando historial...</td></tr>`;
+
+    try {
+        const [noticiasRes, eventosRes, anunciosRes] = await Promise.all([
+            supabase.from('noticias').select('id, titulo, estado, fecha_publicacion, created_at').eq('estado', 'ARCHIVADO'),
+            supabase.from('eventos').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO'),
+            supabase.from('anuncios').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO')
+        ]);
+
+        const filas = [];
+
+        (noticiasRes.data ?? []).forEach((n) => filas.push({
+            id: n.id,
+            tipo: 'Noticia',
+            titulo: n.titulo,
+            fecha: n.fecha_publicacion || n.created_at,
+            estado: n.estado
+        }));
+
+        (eventosRes.data ?? []).forEach((e) => filas.push({
+            id: e.id,
+            tipo: 'Evento',
+            titulo: e.titulo,
+            fecha: e.fecha_inicio || e.created_at,
+            estado: e.estado
+        }));
+
+        (anunciosRes.data ?? []).forEach((a) => filas.push({
+            id: a.id,
+            tipo: 'Anuncio',
+            titulo: a.titulo,
+            fecha: a.fecha_inicio || a.created_at,
+            estado: a.estado
+        }));
+
+        filas.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+        if (!filas.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="table-message">No hay publicaciones archivadas.</td></tr>`;
+            return el;
+        }
+
+        const fragmento = document.createDocumentFragment();
+
+        filas.forEach((fila) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="status-badge status-neutro">${esc(fila.tipo)}</span></td>
+                <td class="table-cell-strong">${esc(fila.titulo)}</td>
+                <td>${esc(formatearFecha(fila.fecha))}</td>
+                <td><span class="status-badge status-archivado">${esc(formatearEstado(fila.estado))}</span></td>
+            `;
+            fragmento.appendChild(tr);
+        });
+
+        tbody.innerHTML = '';
+        tbody.appendChild(fragmento);
+    } catch (error) {
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan="4" class="table-message">No se pudo cargar el historial.</td></tr>`;
+        mostrarMensaje(mensajeSupabase(error, 'No se pudo cargar el archivo.'), 'error');
+    }
+
+    return el;
+}
+
+
 const LISTADOS = {
 
     noticias: () => vistaListado({
@@ -1102,7 +1254,9 @@ const LISTADOS = {
                 celda: (fila) => `<td>${esc(formatearFecha(fila.created_at))}</td>`
             }
         ]
-    })
+    }),
+
+    archivo: vistaArchivo
 
 };
 
@@ -2101,12 +2255,14 @@ async function vistaAnuncio(id) {
 async function vistaPerfil(id) {
 
     const editando = Boolean(id);
+    const yo = store.admin.perfil;
+    const miNivel = rolANivel(yo.rol);
 
     const el = crearEsqueleto({
         seccion: 'administradores',
         plural: 'administradores',
         etiqueta: 'ACCESO',
-        singular: 'administrador',
+        singular: 'perfil',
         editando,
         ayuda: 'Define quién puede entrar al panel y qué puede hacer.',
 
@@ -2136,14 +2292,33 @@ async function vistaPerfil(id) {
                 <div class="form-group">
                     <label for="rol">Rol *</label>
                     <select id="rol" name="rol" required>
-                        <option value="ADMINISTRADOR">Administrador</option>
-                        <option value="EDITOR">Editor</option>
+                        ${opcionesRolDisponibles(miNivel, editando ? null : undefined)}
                     </select>
 
                     <small class="form-help">
-                        Solo los administradores gestionan otros perfiles.
+                        ${miNivel === NIVEL_ACCESO.MAESTRO
+                            ? 'Cuenta principal: puede crear administradores y editores.'
+                            : miNivel === NIVEL_ACCESO.ADMINISTRADOR
+                                ? 'Administrador: solo puede crear editores.'
+                                : 'Editor: no gestiona otros perfiles.'}
                     </small>
                 </div>
+
+                ${miNivel === NIVEL_ACCESO.MAESTRO
+                    ? `
+                <div class="form-group" id="grupo-es-maestro">
+                    <label for="es-maestro">Cuenta principal *</label>
+                    <select id="es-maestro" name="es_maestro" required>
+                        <option value="false">No</option>
+                        <option value="true">Sí (maestra)</option>
+                    </select>
+                    <small class="form-help">
+                        Solo una cuenta debe ser la maestra. Tiene control total del panel.
+                    </small>
+                </div>
+                `
+                    : ''
+                }
 
                 <div class="form-group">
                     <label for="estado-perfil">Estado *</label>
@@ -2163,7 +2338,7 @@ async function vistaPerfil(id) {
                     id="save-button"
                     type="submit"
                     class="editor-save-button"
-                >${editando ? 'Guardar cambios' : 'Guardar administrador'}</button>
+                >${editando ? 'Guardar cambios' : 'Guardar perfil'}</button>
             </div>`
     });
 
@@ -2176,51 +2351,91 @@ async function vistaPerfil(id) {
     if (editando) {
         perfilOriginal = await cargarRegistro(
             'perfiles_admin',
-            'id, nombre, rol, estado',
+            'id, nombre, rol, estado, es_maestro',
             id
         );
 
-        rellenar(el, perfilOriginal);
+        // Jerarquía: no se puede editar a alguien de nivel igual o superior.
+        if (perfilOriginal) {
+            const nivelOriginal = rolANivel(perfilOriginal.rol);
+            if (nivelOriginal >= miNivel && perfilOriginal.id !== yo.id) {
+                mensajes.mostrar('No tienes permiso para editar este perfil.', 'error');
+                $('#rol', el).disabled = true;
+                $('#estado-perfil', el).disabled = true;
+                const esMaestroEl = $('#es-maestro', el);
+                if (esMaestroEl) esMaestroEl.disabled = true;
+                boton.disabled = true;
+            }
+        }
+
+        rellenarPerfil(el, perfilOriginal);
     }
 
     /**
-     * Reglas de seguridad:
-     *   1. Nadie se desactiva a sí mismo (se quedaría sin acceso).
-     *   2. Nunca puede quedar cero administradores activos.
+     * Reglas de seguridad por jerarquía:
+     *   1. Nadie se desactiva a sí mismo.
+     *   2. Un perfil de nivel >= al tuyo no se puede editar (excepto tú mismo).
+     *   3. Nunca puede quedar cero perfiles MAESTRO activos.
+     *   4. Si no hay MAESTRO, nunca puede quedar cero ADMINISTRADOR activos.
      */
     async function validarSeguro(datos) {
 
-        if (editando && id === store.admin.perfil.id && datos.estado !== 'ACTIVO') {
+        if (editando && id === yo.id && datos.estado !== 'ACTIVO') {
             return 'No puedes desactivar tu propia cuenta: perderías el acceso al panel.';
         }
 
         const { data: perfiles, error } = await supabase
             .from('perfiles_admin')
-            .select('id, rol, estado');
+            .select('id, nombre, rol, estado, es_maestro');
 
         if (error) {
-            console.warn('No se pudo verificar el número de administradores:', error);
+            console.warn('No se pudo verificar perfiles:', error);
             return null;
         }
 
-        const activos = (perfiles ?? []).filter(
-            (perfil) => perfil.rol === 'ADMINISTRADOR' && perfil.estado === 'ACTIVO'
-        );
-
-        let restantes = activos.length;
-
-        if (perfilOriginal) {
-            const eraAdminActivo = perfilOriginal.rol === 'ADMINISTRADOR'
-                && perfilOriginal.estado === 'ACTIVO';
-
-            const seguiraAdminActivo = datos.rol === 'ADMINISTRADOR'
-                && datos.estado === 'ACTIVO';
-
-            if (eraAdminActivo && !seguiraAdminActivo) restantes -= 1;
+        // No se puede editar a alguien de nivel superior o igual (salvo uno mismo).
+        if (editando && perfilOriginal) {
+            const nivelOriginal = rolANivel(perfilOriginal.rol);
+            if (nivelOriginal >= miNivel && perfilOriginal.id !== yo.id) {
+                return 'No tienes permiso para modificar este perfil.';
+            }
+            // Si intentas subir el rol de alguien por encima del tuyo.
+            const nivelDestino = rolANivel(datos.rol);
+            if (nivelDestino > miNivel) {
+                return 'No puedes asignar un rol superior al tuyo.';
+            }
+            // Es_maestro solo puede tocarlo un MAESTRO.
+            if (datos.es_maestro !== undefined && datos.es_maestro !== perfilOriginal.es_maestro && miNivel !== NIVEL_ACCESO.MAESTRO) {
+                return 'Solo la cuenta principal puede asignar la casilla de cuenta principal.';
+            }
         }
 
-        if (restantes <= 0) {
-            return 'No se puede dejar el panel sin administradores activos: al menos un perfil debe conservar el rol Administrador y estado Activo.';
+        const maestrosActivos = (perfiles ?? []).filter(
+            (p) => p.es_maestro && p.estado === 'ACTIVO'
+        );
+        const adminsActivos = (perfiles ?? []).filter(
+            (p) => !p.es_maestro && p.rol === 'ADMINISTRADOR' && p.estado === 'ACTIVO'
+        );
+
+        let restanteMaestros = maestrosActivos.length;
+        let restanteAdmins = adminsActivos.length;
+
+        if (perfilOriginal) {
+            const eraMaestroActivo = perfilOriginal.es_maestro && perfilOriginal.estado === 'ACTIVO';
+            const seguiraMaestroActivo = datos.es_maestro && datos.estado === 'ACTIVO';
+            if (eraMaestroActivo && !seguiraMaestroActivo) restanteMaestros -= 1;
+
+            const eraAdminActivo = !perfilOriginal.es_maestro && perfilOriginal.rol === 'ADMINISTRADOR' && perfilOriginal.estado === 'ACTIVO';
+            const seguiraAdminActivo = !datos.es_maestro && datos.rol === 'ADMINISTRADOR' && datos.estado === 'ACTIVO';
+            if (eraAdminActivo && !seguiraAdminActivo) restanteAdmins -= 1;
+        }
+
+        if (restanteMaestros <= 0) {
+            return 'No se puede dejar el panel sin una cuenta principal (maestra) activa.';
+        }
+
+        if (restanteMaestros === 0 && restanteAdmins <= 0) {
+            return 'No se puede dejar el panel sin administradores activos.';
         }
 
         return null;
@@ -2235,13 +2450,15 @@ async function vistaPerfil(id) {
         const nombre = $('#nombre', el).value.trim();
         const rol = $('#rol', el).value;
         const estado = $('#estado-perfil', el).value;
+        const esMaestroEl = $('#es-maestro', el);
+        const esMaestro = esMaestroEl ? esMaestroEl.value === 'true' : false;
 
         if (nombre.length < 3) {
             mensajes.mostrar('El nombre debe tener al menos 3 caracteres.', 'error');
             return;
         }
 
-        const datos = { nombre, rol, estado };
+        const datos = { nombre, rol, estado, es_maestro: esMaestro };
 
         const motivo = await validarSeguro(datos);
         if (motivo) {
@@ -2261,7 +2478,6 @@ async function vistaPerfil(id) {
 
                 if (error) throw error;
 
-                // Si edité mi propio perfil, la sesión en memoria refleja el cambio.
                 if (store.admin.perfil.id === id) {
                     Object.assign(store.admin.perfil, datos);
                     store.escribirCache();
@@ -2270,8 +2486,6 @@ async function vistaPerfil(id) {
 
                 mensajes.mostrar('Cambios guardados correctamente.', 'success');
             } else {
-                // ⚠️ Desde el cliente NO se puede crear usuarios en auth.users:
-                // primero se crea el usuario en Supabase Auth y luego el perfil.
                 const { error } = await supabase
                     .from('perfiles_admin')
                     .insert(datos)
@@ -2292,12 +2506,49 @@ async function vistaPerfil(id) {
             }
         } finally {
             boton.disabled = false;
-            boton.textContent = editando ? 'Guardar cambios' : 'Guardar administrador';
+            boton.textContent = editando ? 'Guardar cambios' : 'Guardar perfil';
         }
     });
 
     return el;
 }
+
+/**
+ * Devuelve las opciones de `<select>` de rol que el usuario actual puede asignar.
+ * `rolPreseleccionado` solo se usa al crear (nuevo): el primer valor válido.
+ */
+function opcionesRolDisponibles(miNivel, rolPreseleccionado) {
+
+    let opciones = [];
+
+    if (miNivel === NIVEL_ACCESO.MAESTRO) {
+        opciones = [
+            { valor: 'ADMINISTRADOR', etiqueta: 'Administrador' },
+            { valor: 'EDITOR', etiqueta: 'Editor' }
+        ];
+    } else if (miNivel === NIVEL_ACCESO.ADMINISTRADOR) {
+        opciones = [
+            { valor: 'EDITOR', etiqueta: 'Editor' }
+        ];
+    }
+
+    return opciones.map((o) => {
+        const seleccionado = rolPreseleccionado === o.valor ? ' selected' : '';
+        return `<option value="${o.valor}"${seleccionado}>${esc(o.etiqueta)}</option>`;
+    }).join('');
+}
+
+/**
+ * Rellena el formulario de perfil con los datos de la base, incluyendo es_maestro.
+ */
+function rellenarPerfil(el, datos) {
+    $('#nombre', el).value = datos.nombre ?? '';
+    $('#rol', el).value = datos.rol ?? '';
+    $('#estado-perfil', el).value = datos.estado ?? '';
+    const esMaestroEl = $('#es-maestro', el);
+    if (esMaestroEl) esMaestroEl.value = String(datos.es_maestro ?? false);
+}
+
 
 
 const EDITORES = {
@@ -2334,7 +2585,8 @@ function hashCanonico(ruta) {
     const meta = SECCIONES[ruta.seccion];
 
     if (ruta.seccion === 'login' || !meta) return '#/dashboard';
-    if (meta.soloAdmin && store.admin.perfil.rol !== 'ADMINISTRADOR') return '#/dashboard';
+    const nivelUsuario = store.admin.perfil ? rolANivel(store.admin.perfil.rol) : 0;
+    if (meta.nivelMinimo && nivelUsuario < meta.nivelMinimo) return '#/dashboard';
     if (ruta.accion && ruta.accion !== 'nuevo' && ruta.accion !== 'editar') return `#/${ruta.seccion}`;
     if (ruta.accion === 'editar' && !ruta.id) return `#/${ruta.seccion}`;
 

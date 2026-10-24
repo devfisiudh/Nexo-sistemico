@@ -1,6 +1,15 @@
 {
-  "cleanUrls": false,
+  "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/noticias", "destination": "/pages/noticias.html" },
+    { "source": "/eventos", "destination": "/pages/eventos.html" },
+    { "source": "/comunidad", "destination": "/pages/comunidad.html" },
+    { "source": "/nosotros", "destination": "/pages/nosotros.html" },
+    { "source": "/contacto", "destination": "/pages/contacto.html" },
+    { "source": "/proyectos/rastreo-bus", "destination": "/pages/proyectos/rastreo-bus.html" },
+    { "source": "/", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
