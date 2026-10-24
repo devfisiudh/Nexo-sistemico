@@ -68,7 +68,7 @@ function buildTarjeta(evento) {
     // El botón externo va a la inscripción; el interno, a la página de detalle.
     const enlace = evento.tieneInscripcion
         ? `href="${escapar(evento.urlInscripcion)}" target="_blank" rel="noopener noreferrer"`
-        : `href="evento.html?slug=${encodeURIComponent(evento.slug)}"`;
+        : `href="/evento?slug=${encodeURIComponent(evento.slug)}"`;
 
     return `
         <article class="event-card ${escapar(evento.vigencia.clase)}">

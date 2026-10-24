@@ -74,7 +74,7 @@ function buildTarjeta(noticia) {
                 <span class="card-date">${escapar(noticia.fecha)}</span>
                 <h3 class="card-title">${escapar(noticia.titulo)}</h3>
                 <p class="card-excerpt">${escapar(noticia.resumen)}</p>
-                <a href="articulo.html?slug=${encodeURIComponent(noticia.slug)}" class="read-more">Leer noticia &rarr;</a>
+                <a href="/articulo?slug=${encodeURIComponent(noticia.slug)}" class="read-more">Leer noticia &rarr;</a>
             </div>
         </article>
     `;

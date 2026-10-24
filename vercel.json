@@ -2,13 +2,15 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/noticias", "destination": "/pages/noticias.html" },
-    { "source": "/eventos", "destination": "/pages/eventos.html" },
-    { "source": "/comunidad", "destination": "/pages/comunidad.html" },
-    { "source": "/nosotros", "destination": "/pages/nosotros.html" },
-    { "source": "/contacto", "destination": "/pages/contacto.html" },
-    { "source": "/proyectos/rastreo-bus", "destination": "/pages/proyectos/rastreo-bus.html" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/noticias", "destination": "/pages/noticias" },
+    { "source": "/eventos", "destination": "/pages/eventos" },
+    { "source": "/comunidad", "destination": "/pages/comunidad" },
+    { "source": "/nosotros", "destination": "/pages/nosotros" },
+    { "source": "/contacto", "destination": "/pages/contacto" },
+    { "source": "/articulo", "destination": "/pages/articulo" },
+    { "source": "/evento", "destination": "/pages/evento" },
+    { "source": "/proyectos/rastreo-bus", "destination": "/pages/proyectos/rastreo-bus" },
+    { "source": "/", "destination": "/index" }
   ],
   "headers": [
     {

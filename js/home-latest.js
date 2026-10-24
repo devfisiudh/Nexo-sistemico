@@ -60,7 +60,7 @@ function tarjetaNoticia(noticia) {
                 <span class="latest-meta">${escapar(noticia.categoria)} · ${escapar(noticia.fecha)}</span>
                 <h3>${escapar(noticia.titulo)}</h3>
                 <p>${escapar(noticia.resumen)}</p>
-                <a href="pages/articulo.html?slug=${encodeURIComponent(noticia.slug)}" class="latest-link">Leer noticia →</a>
+                <a href="/articulo?slug=${encodeURIComponent(noticia.slug)}" class="latest-link">Leer noticia →</a>
             </div>
         </article>
     `;
@@ -77,7 +77,7 @@ function tarjetaEvento(evento) {
                 <span class="latest-meta">${escapar(evento.lugar)} · ${escapar(evento.fechaTexto)}</span>
                 <h3>${escapar(evento.titulo)}</h3>
                 <p>${escapar(evento.resumen)}</p>
-                <a href="pages/evento.html?slug=${encodeURIComponent(evento.slug)}" class="latest-link">Ver evento →</a>
+                <a href="/evento?slug=${encodeURIComponent(evento.slug)}" class="latest-link">Ver evento →</a>
             </div>
         </article>
     `;
