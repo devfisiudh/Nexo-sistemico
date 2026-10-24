@@ -35,7 +35,7 @@ verdad y todo el contenido se publica desde el panel.
 
   ADMINISTRADOR (con cuenta)
       │
-      └─> admin/js/*.js ──> Supabase Auth ──> perfiles_admin (rol + estado)
+      └─> admin/js/app.js ──> Supabase Auth ──> perfiles_admin (rol + estado)
                               │
                               ├─ autenticación  ── RLS por es_admin_activo()
                               └─ imágenes       ── Storage, bucket portal-publico
@@ -49,6 +49,11 @@ Claves del diseño:
   · El panel no protege los datos, lo hace RLS. Ocultar botones en la interfaz
     es solo cortesía: la barrera real está en la base.
 
+  · El panel es una SPA: las rutas viven en el hash (#/noticias/editar/<id>)
+    y la sesión se verifica una sola vez al entrar (caché de 5 minutos en
+    sessionStorage). Cambiar de sección no vuelve a pasar por el login ni por
+    pantallas de "Verificando sesión...".
+
   · El contenido tiene dos ejes independientes:
       - `estado`      → editorial: BORRADOR | PUBLICADO | ARCHIVADO
       - `fecha_*`     → temporal: cuándo se publica y hasta cuándo
@@ -60,15 +65,14 @@ Claves del diseño:
 --------------------------------------------------------------------------------
 
 /
-├── admin                       Panel de administración
-│   ├── index.html              Login
-│   ├── dashboard.html          Resumen
-│   ├── pages/                  noticias · eventos · anuncios (+ editores)
-│   ├── js/                     lógica del panel
-│   │   ├── admin-guard.js      verificación de sesión y perfil
-│   │   ├── utils.js            helpers compartidos (slug, fechas, visibilidad)
-│   │   └── <módulo>-editor.js  formularios
-│   └── css/admin.css
+├── admin                       Panel de administración (SPA, sin recargas)
+│   ├── index.html              Shell único: login + sidebar + header
+│   ├── js/
+│   │   ├── app.js              router por hash, vistas y editores
+│   │   └── utils.js            helpers compartidos (slug, fechas, visibilidad)
+│   └── css/
+│       ├── admin.css           estilos base del panel
+│       └── spa.css             transiciones entre vistas
 │
 ├── assets                      img · icons · docs (PDF de descarga)
 ├── components/Layout           navbar.html y footer.html (cargados por fetch)
@@ -218,8 +222,8 @@ DESARROLLO LOCAL
 8. PENDIENTES CONOCIDOS
 --------------------------------------------------------------------------------
   · Menú "Documentos": sin implementar.
-  · Menú "Administradores": sin implementar; la función es_administrador()
-    ya está disponible y el listado del panel solo falta.
+  · Borrado de registros: el panel solo crea y edita; para eliminar contenido
+    se hace desde Supabase (Dashboard o SQL).
   · "Rastreo Bus" es una maqueta: js/rastreo.js simula una consola.
   · Categorías de noticias: la tabla guarda texto libre. Las de ejemplo están
     fijadas en js/utils/formato.js; si crece la lista, conviene una tabla.

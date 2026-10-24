@@ -1,0 +1,64 @@
+/* admin/css/spa.css — Detalles del shell SPA.
+   La maqueta base (sidebar, header, tablas, editores) vive en admin.css y no
+   se toca: aquí solo se añade lo que necesita el enrutamiento por hash. */
+
+
+/* ── Transición entre vistas ───────────────────────────────────────────────
+   Cada sección entra con un fundido corto. Es decorativo: sin él el panel
+   sigue funcionando igual. */
+
+.view-enter {
+    animation: vista-entra 0.18s ease-out both;
+}
+
+@keyframes vista-entra {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .view-enter {
+        animation: none;
+    }
+}
+
+
+/* Indicador dentro del área de contenido (no debe ocupar toda la pantalla
+   como .admin-loading, que es la pantalla completa de arranque). */
+
+.view-loading {
+    padding: 45px 0;
+    text-align: center;
+    color: #777;
+}
+
+
+/* ── Filas del dashboard ───────────────────────────────────────────────────
+   Badge de estado + enlace "Editar" alineados a la derecha. */
+
+.content-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+
+/* ── Foco visible ──────────────────────────────────────────────────────────
+   El panel se navega completo con teclado; el foco debe verse siempre. */
+
+#admin-content:focus {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid #a4161a;
+    outline-offset: 2px;
+}
