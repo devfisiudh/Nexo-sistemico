@@ -1,11 +1,12 @@
 // js/evento-detalle.js — Página de detalle de un evento.
 //
-// URL canónica: evento.html?slug=hackathon-udh-2026
+// URL canónica: /eventos?slug=hackathon-udh-2026
 // Se acepta ?id= como compatibilidad con los enlaces anteriores a la migración.
 
 import { obtenerEventoPorSlug } from './data/eventos.js';
 import { escapar } from './utils/formato.js';
 import { sanitizar } from './utils/sanitizar.js';
+import { formatearFecha } from './utils/formato.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarDetalleEvento();
@@ -47,78 +48,93 @@ async function cargarDetalleEvento() {
         mostrarError(contenedor, 'Hubo un error al cargar el evento.');
 
     }
-
 }
 
 
 function renderDetalle(contenedor, evento) {
 
+    const fechaTexto = evento.fechaTexto || (evento.fecha_inicio ? formatearFecha(evento.fecha_inicio) : 'Sin fecha');
+    const lugar = evento.lugar || 'Por definir';
+
     const distintivo = evento.vigencia.etiqueta
-        ? `<span class="detail-badge ${escapar(evento.vigencia.clase)}">${escapar(evento.vigencia.etiqueta)}</span>`
+        ? `<span class="post-kicker dot" style="color:${evento.vigencia.clase === 'status-publicado' ? 'var(--scarlet)' : evento.vigencia.clase === 'status-vencido' ? '#B5151C' : 'var(--antler)'}">${escapar(evento.vigencia.etiqueta)}</span>`
         : '';
 
     const portada = evento.imagenUrl
-        ? `<img src="${escapar(evento.imagenUrl)}" alt="" class="event-hero-cover" loading="lazy">`
-        : '';
+        ? `<img src="${escapar(evento.imagenUrl)}" alt="" loading="lazy">`
+        : '<span class="post-hero-placeholder" aria-hidden="true">IMAGEN</span>';
 
     // El cuerpo puede venir vacío; en ese caso mostramos el resumen.
     const cuerpo = sanitizar(evento.contenido)
         || `<p class="lead">${escapar(evento.resumen)}</p>`;
 
-    const cta = evento.tieneInscripcion
+    const cta = evento.tieneInscripcion && evento.urlInscripcion
         ? `
-            <div class="event-detail-cta">
-                <a href="${escapar(evento.urlInscripcion)}" target="_blank" rel="noopener noreferrer" class="detail-cta-btn">
-                    ${escapar(evento.textoBoton)} ↗
+            <div class="post-action">
+                <a href="${escapar(evento.urlInscripcion)}" target="_blank" rel="noopener noreferrer" class="post-btn">
+                    ${escapar(evento.textoBoton || 'Inscribirse')} ↗
                 </a>
             </div>`
         : '';
 
     contenedor.innerHTML = `
-        <div class="event-detail-hero" style="background-color: ${escapar(evento.color)};">
+        <a href="/eventos" class="post-back">&larr; Volver a la Agenda</a>
+
+        <header class="post-hero" style="background-color: ${escapar(evento.color || 'var(--surface-2)')};">
             ${portada}
-            <div class="event-detail-hero-inner">
+            <div class="post-hero-inner">
                 ${distintivo}
-                <span class="detail-tipo-tag">EVENTO</span>
-                <h1 class="event-detail-title">${escapar(evento.titulo)}</h1>
-                <p class="event-detail-desc">${escapar(evento.resumen)}</p>
+                <span class="post-type-badge">EVENTO</span>
+                <h1 class="post-title">${escapar(evento.titulo)}</h1>
+                <p class="post-lead">${escapar(evento.resumen || '')}</p>
             </div>
-        </div>
+        </header>
 
-        <div class="event-detail-meta-bar">
-            <div class="meta-item">
-                <span class="meta-icon">📅</span>
+        <div class="post-meta">
+            <div class="post-meta-item">
+                <span class="post-meta-icon">📅</span>
                 <div>
-                    <span class="meta-label">FECHA</span>
-                    <strong>${escapar(evento.fechaTexto)}</strong>
+                    <span class="post-meta-label">Fecha</span>
+                    <span class="post-meta-value">${escapar(fechaTexto)}</span>
                 </div>
             </div>
-            <div class="meta-item">
-                <span class="meta-icon">📍</span>
+            <div class="post-meta-item">
+                <span class="post-meta-icon">📍</span>
                 <div>
-                    <span class="meta-label">LUGAR</span>
-                    <strong>${escapar(evento.lugar)}</strong>
+                    <span class="post-meta-label">Lugar</span>
+                    <span class="post-meta-value">${escapar(lugar)}</span>
                 </div>
             </div>
+            ${evento.url_inscripcion
+                ? `
+                <div class="post-meta-item">
+                    <span class="post-meta-icon">🎫</span>
+                    <div>
+                        <span class="post-meta-label">Inscripción</span>
+                        <span class="post-meta-value">Enlace externo</span>
+                    </div>
+                </div>`
+                : ''
+            }
         </div>
 
-        <div class="event-detail-body">
+        <div class="post-body" id="cuerpo-texto">
             ${cuerpo}
         </div>
 
         ${cta}
     `;
-
 }
 
 
 function mostrarError(contenedor, mensaje) {
 
     contenedor.innerHTML = `
-        <div class="detail-error">
+        <a href="/eventos" class="post-back">&larr; Volver a la Agenda</a>
+
+        <div class="post-error">
             <h2>${escapar(mensaje)}</h2>
-            <a href="eventos.html" class="back-link-btn">&larr; Volver a la Agenda</a>
+            <p><a href="/eventos">&larr; Volver a la Agenda</a></p>
         </div>
     `;
-
 }

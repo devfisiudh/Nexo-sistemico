@@ -1,144 +1,389 @@
-/* css/articulo.css - DARK MODE */
+/* ============================================================
+   css/articulo.css — Páginas de detalle de publicaciones
+   Estilo profesional tipo blog / wiki: portada, jerarquía
+   tipográfica clara y lectura cómoda.
+   ============================================================ */
 
-.article-container {
-    max-width: 800px; /* Ancho lectura tipo blog Medium */
+/* ── Contenedor principal ─────────────────────────────────── */
+
+.post-page {
+    max-width: 760px;
     margin: 0 auto;
-    padding: 100px 20px 60px;
+    padding: 72px 20px 80px;
     min-height: 80vh;
 }
 
-/* Botón volver */
-.back-link {
-    color: #e63946;
+.post-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--scarlet);
     text-decoration: none;
-    font-weight: bold;
-    display: inline-block;
-    margin-bottom: 30px;
-    transition: transform 0.3s;
-}
-.back-link:hover { transform: translateX(-5px); }
-
-/* Cabecera del artículo */
-.article-header { margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 30px; }
-
-.article-meta {
-    color: #888;
+    font-weight: 600;
     font-size: 0.9rem;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-bottom: 32px;
+    transition: transform var(--ease), color var(--ease);
 }
 
-.article-title {
-    color: #fff;
-    font-size: 2.5rem;
-    line-height: 1.2;
-    margin-bottom: 20px;
+.post-back:hover {
+    color: var(--white);
+    transform: translateX(-6px);
 }
 
-.article-image {
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 40px;
-    background-color: #222;
-    overflow: hidden;
+/* ── Hero / portada ───────────────────────────────────────── */
+
+.post-hero {
     position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    background: var(--surface-2);
+    box-shadow: var(--shadow-lg);
 }
 
-/* Portada real subida desde el panel */
-.article-cover {
+.post-hero img {
     width: 100%;
-    height: 100%;
+    height: 320px;
     object-fit: cover;
     display: block;
 }
 
-/* Cuando no hay portada, el bloque de color se rotula. */
-.article-cover-placeholder {
+.post-hero-placeholder {
     width: 100%;
-    height: 100%;
+    height: 320px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.18);
-    font-size: 3rem;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: 4px;
+    opacity: 0.16;
 }
 
-/* Cuerpo del texto */
-.article-body {
-    color: #cccccc;
+.post-hero-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 32px;
+    background: linear-gradient(
+        to top,
+        rgba(12, 12, 12, 0.85) 0%,
+        rgba(12, 12, 12, 0.45) 35%,
+        transparent 100%
+    );
+}
+
+.post-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    background: rgba(255, 255, 255, 0.10);
+    color: var(--white);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 16px;
+    width: fit-content;
+}
+
+.post-kicker.dot::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.post-type-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-2);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.post-title {
+    font-size: 2.75rem;
+    line-height: 1.15;
+    margin: 0 0 16px;
+    color: var(--white);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.post-lead {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--text-2);
+    margin: 0 0 0;
+    max-width: 620px;
+}
+
+/* ── Meta-información ─────────────────────────────────────── */
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 32px;
+    margin-bottom: 40px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border-1);
+    border-bottom: 1px solid var(--border-1);
+}
+
+.post-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-2);
+}
+
+.post-meta-icon {
     font-size: 1.1rem;
-    line-height: 1.8; /* Importante para leer bien */
+    width: 22px;
+    text-align: center;
 }
 
-.article-body p { margin-bottom: 20px; }
-.article-body h2 { color: #fff; margin-top: 40px; margin-bottom: 15px; }
-
-/* --- BOTÓN DE ACCIÓN AL FINAL DEL ARTÍCULO --- */
-.article-action {
-    margin-top: 40px;       /* Separación del texto */
-    padding-top: 30px;      /* Aire interior */
-    border-top: 1px solid #333; /* Una línea para separar visualmente */
-    text-align: center;     /* Centrado */
+.post-meta-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--antler);
+    display: block;
+    margin-bottom: 2px;
 }
 
-.article-btn {
-    display: inline-block;
-    background-color: #e63946; /* Rojo Scarlet */
-    color: white;
-    padding: 15px 40px;
-    border-radius: 50px;    /* Redondeado tipo píldora */
+.post-meta-value {
+    color: var(--text-1);
+    font-weight: 600;
+}
+
+/* ── Cuerpo del artículo ──────────────────────────────────── */
+
+.post-body {
+    color: var(--text-1);
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+
+.post-body p {
+    margin-bottom: 24px;
+}
+
+.post-body strong {
+    color: var(--white);
+    font-weight: 600;
+}
+
+.post-body em {
+    color: var(--text-2);
+    font-style: italic;
+}
+
+/* Encabezados de sección dentro del contenido */
+.post-body h2 {
+    font-size: 1.5rem;
+    color: var(--white);
+    margin: 48px 0 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    padding-left: 10px;
+    border-left: 3px solid var(--scarlet);
+}
+
+.post-body h3 {
+    font-size: 1.2rem;
+    color: var(--white);
+    margin: 36px 0 12px;
+    font-weight: 600;
+}
+
+/* Listas */
+.post-body ul,
+.post-body ol {
+    margin: 16px 0 28px;
+    padding-left: 24px;
+    color: var(--text-1);
+}
+
+.post-body li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+/* Citas / destacados */
+.post-body blockquote {
+    margin: 32px 0;
+    padding: 20px 28px;
+    border-left: 4px solid var(--scarlet);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 1.1rem;
+    font-style: italic;
+    line-height: 1.6;
+    border-radius: 0 8px 8px 0;
+}
+
+.post-body blockquote p {
+    margin: 0 0 8px;
+}
+
+.post-body blockquote cite {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    font-style: normal;
+    color: var(--antler);
+}
+
+/* ── Botón de acción final ────────────────────────────────── */
+
+.post-action {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-1);
+    text-align: center;
+}
+
+.post-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--scarlet);
+    color: var(--white);
+    padding: 16px 40px;
+    border-radius: 999px;
     text-decoration: none;
-    font-weight: bold;
-    font-size: 1.1rem;
-    transition: transform 0.3s, box-shadow 0.3s;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: transform var(--ease), box-shadow var(--ease), background var(--ease);
 }
 
-.article-btn:hover {
-    transform: translateY(-3px); /* Se eleva */
-    box-shadow: 0 10px 20px rgba(230, 57, 70, 0.3); /* Resplandor rojo */
-    background-color: #ff4d5a; /* Un poco más claro */
+.post-btn:hover {
+    transform: translateY(-3px);
+    background-color: var(--scarlet-dk);
+    box-shadow: 0 14px 28px rgba(227, 28, 37, 0.35);
 }
 
-/* ============================================================
-   RESPONSIVO - ARTÍCULO
-   ============================================================ */
+.post-btn:active {
+    transform: translateY(-1px);
+}
+
+/* ── Mensaje de error ─────────────────────────────────────── */
+
+.post-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-2);
+}
+
+.post-error h2 {
+    color: var(--white);
+    margin-bottom: 16px;
+}
+
+.post-error a {
+    color: var(--scarlet);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(227, 28, 37, 0.4);
+    text-underline-offset: 4px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-
-    .article-container {
-        padding: 80px 18px 50px;
+    .post-page {
+        padding: 56px 18px 60px;
     }
 
-    .article-title {
+    .post-hero img,
+    .post-hero-placeholder {
+        height: 220px;
+    }
+
+    .post-hero-inner {
+        padding: 24px;
+    }
+
+    .post-title {
         font-size: 1.9rem;
     }
 
-    .article-image {
-        height: 240px;
+    .post-lead {
+        font-size: 1rem;
     }
 
-    .article-body {
-        font-size: 1rem;
+    .post-meta {
+        gap: 16px 24px;
+        font-size: 0.8rem;
+    }
+
+    .post-body h2 {
+        font-size: 1.3rem;
+        margin: 36px 0 14px;
+    }
+
+    .post-btn {
+        padding: 14px 32px;
+        font-size: 0.95rem;
+        width: 100%;
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
+    .post-page {
+        padding: 48px 16px 50px;
+    }
 
-    .article-title {
+    .post-title {
         font-size: 1.6rem;
     }
 
-    .article-image {
-        height: 180px;
+    .post-kicker {
+        font-size: 0.7rem;
+        padding: 5px 12px;
     }
+}
 
-    .article-btn {
-        padding: 13px 28px;
-        font-size: 1rem;
-    }
+/* ── Utilidades de contenido (sanitizado) ─────────────────── */
+
+.post-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 16px 0;
+    display: block;
+}
+
+.post-body hr {
+    border: none;
+    border-top: 1px solid var(--border-1);
+    margin: 32px 0;
+}
+
+.post-body a {
+    color: var(--scarlet);
+    text-decoration: underline;
+    text-decoration-color: rgba(227, 28, 37, 0.35);
+    text-underline-offset: 3px;
+    transition: color var(--ease);
+}
+
+.post-body a:hover {
+    color: var(--white);
 }
