@@ -11,7 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
         highlightCurrentPage();
     });
 
-    loadComponent('footer-container', `${pathPrefix}/components/Layout/footer.html`);
+    loadComponent('footer-container', `${pathPrefix}/components/Layout/footer.html`, () => {
+        // El año del pie siempre queda actualizado sin tocar el HTML.
+        document.querySelectorAll('[data-anio]').forEach((el) => {
+            el.textContent = String(new Date().getFullYear());
+        });
+    });
 });
 
 function loadComponent(containerId, filePath, callback) {

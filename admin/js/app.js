@@ -162,6 +162,14 @@ const rolANivel = (rol) => {
 };
 
 /**
+ * Nivel efectivo de un perfil: la cuenta maestra (es_maestro) siempre
+ * alcanza el nivel MAESTRO aunque su rol guardado sea ADMINISTRADOR.
+ */
+const nivelDe = (perfil) => (
+    perfil && perfil.es_maestro ? NIVEL_ACCESO.MAESTRO : rolANivel(perfil?.rol)
+);
+
+/**
  * ¿Puede el rol `origen` gestionar (crear/editar/desactivar) al rol `destino`?
  *   MAESTRO → ADMINISTRADOR y EDITOR
  *   ADMINISTRADOR → solo EDITOR
@@ -274,7 +282,7 @@ function mostrarAplicacion() {
         $('#admin-nombre').textContent = perfil.nombre;
         $('#admin-rol').textContent = formatearRol(perfil.rol);
         // EDITOR no ve la sección Administración.
-        $('#menu-administradores').hidden = rolANivel(perfil.rol) < NIVEL_ACCESO.ADMINISTRADOR;
+        $('#menu-administradores').hidden = nivelDe(perfil) < NIVEL_ACCESO.ADMINISTRADOR;
         // Señal visual para la cuenta maestra.
         if (perfil.es_maestro) {
             $('#admin-rol').textContent = `${formatearRol(perfil.rol)} · Cuenta principal`;
@@ -1224,12 +1232,12 @@ const LISTADOS = {
     administradores: () => vistaListado({
         seccion: 'administradores',
         etiqueta: 'ACCESO',
-        titulo: 'Administradores',
+        titulo: 'Administración',
         descripcion: 'Perfiles con acceso al panel de administración.',
-        accionNuevo: '+ Nuevo administrador',
+        accionNuevo: '+ Nuevo perfil',
         placeholderBusqueda: 'Buscar por nombre...',
         tabla: 'perfiles_admin',
-        campos: 'id, nombre, rol, estado, created_at',
+        campos: 'id, nombre, rol, estado, es_maestro, created_at',
         claveFiltro: (fila) => fila.estado,
         filtros: [
             { clave: 'TODOS', etiqueta: 'Todos' },
@@ -1243,7 +1251,11 @@ const LISTADOS = {
             },
             {
                 titulo: 'Rol',
-                celda: (fila) => `<td><span class="status-badge ${fila.rol === 'ADMINISTRADOR' ? 'status-publicado' : 'status-neutro'}">${esc(formatearRol(fila.rol))}</span></td>`
+                celda: (fila) => {
+                    const etiqueta = fila.es_maestro ? 'Cuenta principal' : formatearRol(fila.rol);
+                    const clase = fila.es_maestro ? 'status-programado' : (fila.rol === 'ADMINISTRADOR' ? 'status-publicado' : 'status-neutro');
+                    return `<td><span class="status-badge ${clase}">${esc(etiqueta)}</span></td>`;
+                }
             },
             {
                 titulo: 'Estado',
@@ -2256,7 +2268,7 @@ async function vistaPerfil(id) {
 
     const editando = Boolean(id);
     const yo = store.admin.perfil;
-    const miNivel = rolANivel(yo.rol);
+    const miNivel = nivelDe(yo);
 
     const el = crearEsqueleto({
         seccion: 'administradores',
@@ -2283,6 +2295,28 @@ async function vistaPerfil(id) {
                         (Authentication → Users) para poder iniciar sesión.
                     </small>
                 </div>
+
+                ${editando ? '' : `
+                <div class="form-group">
+                    <label for="uid-auth">UID en Authentication *</label>
+                    <input
+                        id="uid-auth"
+                        name="uid"
+                        type="text"
+                        required
+                        maxlength="36"
+                        placeholder="00000000-0000-0000-0000-000000000000"
+                        pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                    >
+                    <small class="form-help">
+                        En <strong>Authentication → Users</strong>, haz clic en el
+                        usuario y copia el <strong>UID</strong>. Así el perfil queda
+                        unido a esa cuenta. (Si el usuario se creó después de
+                        aplicar <code>sql/06</code>, el perfil ya existe: edítalo en
+                        lugar de crearlo.)
+                    </small>
+                </div>
+                `}
             </div>`,
 
         lateral: `
@@ -2357,7 +2391,7 @@ async function vistaPerfil(id) {
 
         // Jerarquía: no se puede editar a alguien de nivel igual o superior.
         if (perfilOriginal) {
-            const nivelOriginal = rolANivel(perfilOriginal.rol);
+            const nivelOriginal = nivelDe(perfilOriginal);
             if (nivelOriginal >= miNivel && perfilOriginal.id !== yo.id) {
                 mensajes.mostrar('No tienes permiso para editar este perfil.', 'error');
                 $('#rol', el).disabled = true;
@@ -2395,12 +2429,12 @@ async function vistaPerfil(id) {
 
         // No se puede editar a alguien de nivel superior o igual (salvo uno mismo).
         if (editando && perfilOriginal) {
-            const nivelOriginal = rolANivel(perfilOriginal.rol);
+            const nivelOriginal = nivelDe(perfilOriginal);
             if (nivelOriginal >= miNivel && perfilOriginal.id !== yo.id) {
                 return 'No tienes permiso para modificar este perfil.';
             }
             // Si intentas subir el rol de alguien por encima del tuyo.
-            const nivelDestino = rolANivel(datos.rol);
+            const nivelDestino = datos.es_maestro ? NIVEL_ACCESO.MAESTRO : rolANivel(datos.rol);
             if (nivelDestino > miNivel) {
                 return 'No puedes asignar un rol superior al tuyo.';
             }
@@ -2460,6 +2494,18 @@ async function vistaPerfil(id) {
 
         const datos = { nombre, rol, estado, es_maestro: esMaestro };
 
+        // Al crear, el perfil se unta a la cuenta de Authentication mediante su UID.
+        if (!editando) {
+            const uid = ($('#uid-auth', el)?.value ?? '').trim().toLowerCase();
+
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(uid)) {
+                mensajes.mostrar('El UID no tiene un formato de UUID válido.', 'error');
+                return;
+            }
+
+            datos.id = uid;
+        }
+
         const motivo = await validarSeguro(datos);
         if (motivo) {
             mensajes.mostrar(motivo, 'error');
@@ -2494,13 +2540,15 @@ async function vistaPerfil(id) {
 
                 if (error) throw error;
 
-                mensajes.mostrar('Perfil creado. Recuerda que el usuario debe existir en Supabase Auth para poder iniciar sesión.', 'success');
+                mensajes.mostrar('Perfil creado y vinculado al usuario de Authentication. Ya puede iniciar sesión.', 'success');
             }
         } catch (error) {
             console.error(error);
 
             if (error.code === '23503') {
-                mensajes.mostrar('No se puede crear el perfil: el usuario no existe en Supabase Auth (Authentication → Users).', 'error');
+                mensajes.mostrar('No se puede crear el perfil: el UID no corresponde a ningún usuario de Supabase Auth (Authentication → Users).', 'error');
+            } else if (error.code === '23505') {
+                mensajes.mostrar('Ese usuario ya tiene un perfil. Cierra y vuelve a abrir la sección para editarlo y activarlo.', 'error');
             } else {
                 mensajes.mostrar(mensajeSupabase(error, 'No se pudo guardar el perfil.'), 'error');
             }
@@ -2585,7 +2633,7 @@ function hashCanonico(ruta) {
     const meta = SECCIONES[ruta.seccion];
 
     if (ruta.seccion === 'login' || !meta) return '#/dashboard';
-    const nivelUsuario = store.admin.perfil ? rolANivel(store.admin.perfil.rol) : 0;
+    const nivelUsuario = store.admin.perfil ? nivelDe(store.admin.perfil) : 0;
     if (meta.nivelMinimo && nivelUsuario < meta.nivelMinimo) return '#/dashboard';
     if (ruta.accion && ruta.accion !== 'nuevo' && ruta.accion !== 'editar') return `#/${ruta.seccion}`;
     if (ruta.accion === 'editar' && !ruta.id) return `#/${ruta.seccion}`;

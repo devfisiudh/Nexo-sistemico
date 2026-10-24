@@ -61,8 +61,10 @@ async function cargarArticulo() {
 
 function renderizarCabecera(contenedor, noticia) {
 
-    const fecha = noticia.fecha_publicacion || noticia.created_at || '';
-    const fechaTexto = fecha ? formatearFecha(fecha) : 'Sin fecha';
+    // El visor de datos ya normaliza la fecha: `fecha` viene formateada y
+    // `fechaOrdenable` en ISO. Se mantienen los campos crudos por compatibilidad.
+    const fechaISO = noticia.fechaOrdenable || noticia.fecha_publicacion || noticia.created_at || '';
+    const fechaTexto = noticia.fecha || (fechaISO ? formatearFecha(fechaISO) : 'Sin fecha');
 
     const portada = noticia.imagenUrl
         ? `<img src="${escapar(noticia.imagenUrl)}" alt="" loading="lazy">`
@@ -78,8 +80,8 @@ function renderizarCabecera(contenedor, noticia) {
         <header class="post-hero" style="background-color: ${escapar(noticia.color || 'var(--surface-2)')};">
             ${portada}
             <div class="post-hero-inner">
-                <span class="post-type-badge">NOTICIA</span>
                 ${kicker}
+                <span class="post-type-badge">NOTICIA</span>
                 <h1 class="post-title">${escapar(noticia.titulo)}</h1>
                 <p class="post-lead">${escapar(noticia.resumen || '')}</p>
             </div>

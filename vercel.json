@@ -10,6 +10,7 @@
     { "source": "/articulo", "destination": "/pages/articulo" },
     { "source": "/evento", "destination": "/pages/evento" },
     { "source": "/proyectos/rastreo-bus", "destination": "/pages/proyectos/rastreo-bus" },
+    { "source": "/favicon.ico", "destination": "/assets/icons/favicon.png" },
     { "source": "/", "destination": "/index" }
   ],
   "headers": [
@@ -38,13 +39,13 @@
     {
       "source": "/css/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
       ]
     },
     {
       "source": "/js/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
       ]
     },
     {
