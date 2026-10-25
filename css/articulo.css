@@ -317,6 +317,62 @@
     text-underline-offset: 4px;
 }
 
+/* ── Detalle del histórico (noticia o evento archivado) ─────
+   Versión compacta: sin hero grande ni rejilla de metadatos. Solo el aviso
+   de que ya no está en portada, el título y el texto. */
+
+.post-aviso-historico {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    margin-bottom: 26px;
+    padding: 15px 17px;
+
+    border: 1px solid rgba(227, 28, 37, 0.4);
+    border-radius: 10px;
+
+    background: var(--scarlet-glow, rgba(227, 28, 37, 0.18));
+
+    color: var(--text-1);
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.post-aviso-historico strong {
+    color: var(--white);
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+.post-historico-cabecera {
+    margin-bottom: 26px;
+}
+
+.post-historico-cabecera .post-title {
+    font-size: clamp(1.75rem, 5vw, 2.4rem);
+    margin: 14px 0 14px;
+}
+
+.post-historico-datos {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px 22px;
+
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #222;
+
+    color: var(--text-2);
+    font-size: 0.92rem;
+}
+
+
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {

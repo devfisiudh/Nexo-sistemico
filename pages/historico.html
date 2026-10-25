@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, follow">
+    <title>Histórico | Nexo Sistémico UDH</title>
+    <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/blog.css">
+    <link rel="stylesheet" href="../css/historico.css">
+</head>
+<body>
+
+    <div id="navbar-container"></div>
+
+    <main class="container" style="padding: 40px 20px; min-height: 80vh;">
+        <header class="page-header">
+            <div class="page-header-inner">
+                <span class="page-header-tag">PAISI · UDH</span>
+                <h1 class="page-header-title">Histórico <span style="color:#E31C25">PAISI</span></h1>
+                <p class="page-header-sub">
+                    Lo que ya no aparece en las portadas activas: noticias
+                    archivadas y eventos terminados.
+                </p>
+            </div>
+        </header>
+
+        <div class="historico-tabs" role="tablist" aria-label="Secciones del histórico">
+            <button
+                type="button"
+                class="historico-tab activa"
+                role="tab"
+                id="tab-noticias"
+                aria-controls="historico-lista"
+                aria-selected="true"
+                data-seccion="noticias"
+            >Noticias</button>
+
+            <button
+                type="button"
+                class="historico-tab"
+                role="tab"
+                id="tab-eventos"
+                aria-controls="historico-lista"
+                aria-selected="false"
+                data-seccion="eventos"
+            >Eventos</button>
+        </div>
+
+        <ol
+            class="historico-lista"
+            id="historico-lista"
+            role="tabpanel"
+            aria-labelledby="tab-noticias"
+        >
+            <li class="loader-simple historico-cargando">Cargando histórico...</li>
+        </ol>
+
+        <p class="historico-nota" id="historico-nota" hidden></p>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/historico.js"></script>
+</body>
+</html>

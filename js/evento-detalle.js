@@ -4,6 +4,7 @@
 // Se acepta ?id= como compatibilidad con los enlaces anteriores a la migración.
 
 import { obtenerEventoPorSlug } from './data/eventos.js';
+import { obtenerEventoArchivado } from './data/historial.js';
 import { escapar } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
@@ -30,7 +31,15 @@ async function cargarDetalleEvento() {
 
     try {
 
-        const evento = await obtenerEventoPorSlug(slug ?? `evento-${idResidual}`);
+        const buscado = slug ?? `evento-${idResidual}`;
+
+        let evento = await obtenerEventoPorSlug(buscado);
+
+        // Mismo caso que en las noticias: los archivados y vencidos no los
+        // devuelve RLS, así que se piden por la RPC del histórico.
+        if (!evento) {
+            evento = await obtenerEventoArchivado(buscado).catch(() => null);
+        }
 
         if (!evento) {
             mostrarError(contenedor, 'Evento no encontrado o no publicado.');
@@ -38,6 +47,11 @@ async function cargarDetalleEvento() {
         }
 
         document.title = `${evento.titulo} | Nexo Sistémico`;
+
+        if (evento.historico) {
+            renderCompacto(contenedor, evento);
+            return;
+        }
 
         renderDetalle(contenedor, evento);
 
@@ -123,6 +137,46 @@ function renderDetalle(contenedor, evento) {
         </div>
 
         ${cta}
+    `;
+}
+
+
+/**
+ * Detalle de un evento del histórico: compacto y sin CTA de inscripción
+ * (un evento terminado ya no admite inscribirse).
+ */
+function renderCompacto(contenedor, evento) {
+
+    const fechaTexto = evento.fechaTexto || 'Sin fechas';
+
+    const cuerpo = prepararContenido(evento.contenido)
+        || `<p class="lead">${escapar(evento.resumen)}</p>`;
+
+    contenedor.innerHTML = `
+        <a href="/historico?seccion=eventos" class="post-back">← Volver al histórico</a>
+
+        <div class="post-aviso-historico">
+            <strong>${escapar(evento.historico || 'Archivado')}</strong>
+            <span>
+                Este evento ya no aparece en la agenda. Aquí queda su
+                información para consulta.
+            </span>
+        </div>
+
+        <header class="post-historico-cabecera">
+            <span class="post-kicker dot" style="color: var(--scarlet)">Evento</span>
+            <h1 class="post-title">${escapar(evento.titulo)}</h1>
+            ${evento.resumen ? `<p class="post-lead">${escapar(evento.resumen)}</p>` : ''}
+        </header>
+
+        <div class="post-historico-datos">
+            <span>📅 ${escapar(fechaTexto)}</span>
+            <span>📍 ${escapar(evento.lugar)}</span>
+        </div>
+
+        <div class="post-body" id="cuerpo-texto">
+            ${cuerpo}
+        </div>
     `;
 }
 

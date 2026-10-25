@@ -4,6 +4,7 @@
   "rewrites": [
     { "source": "/noticias", "destination": "/pages/noticias" },
     { "source": "/eventos", "destination": "/pages/eventos" },
+    { "source": "/historico", "destination": "/pages/historico" },
     { "source": "/comunidad", "destination": "/pages/comunidad" },
     { "source": "/nosotros", "destination": "/pages/nosotros" },
     { "source": "/contacto", "destination": "/pages/contacto" },

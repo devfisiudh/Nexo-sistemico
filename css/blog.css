@@ -540,6 +540,64 @@
     background: var(--surface-3, #222);
 }
 
+/* ── Enlace al histórico (pie de /noticias y /eventos) ──────
+   Vive aquí y no en css/historico.css porque estas dos páginas no cargan
+   el CSS de la página /historico. */
+
+.historico-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    margin-top: 46px;
+    padding-top: 26px;
+
+    border-top: 1px solid #222;
+}
+
+.historico-pie-texto {
+    margin: 0;
+
+    color: var(--text-2);
+
+    font-size: 0.95rem;
+}
+
+.historico-pie-enlace {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 11px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+
+    color: var(--white);
+    text-decoration: none;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    transition: background var(--ease), border-color var(--ease), transform var(--ease);
+}
+
+.historico-pie-enlace:hover {
+    background: var(--scarlet);
+    border-color: var(--scarlet);
+
+    transform: translateY(-2px);
+}
+
+.historico-pie-enlace:focus-visible {
+    outline: 2px solid var(--scarlet);
+    outline-offset: 3px;
+}
+
+
 .search-no-results {
     text-align: center;
     color: var(--text-muted, #555);

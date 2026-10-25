@@ -6,6 +6,7 @@
 // Se acepta ?id= como compatibilidad con los enlaces anteriores a la migración.
 
 import { obtenerNoticiaPorSlug } from './data/noticias.js';
+import { obtenerNoticiaArchivada } from './data/historial.js';
 import { escapar } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
@@ -32,10 +33,25 @@ async function cargarArticulo() {
 
     try {
 
-        const noticia = await obtenerNoticiaPorSlug(slug ?? `noticia-${idResidual}`);
+        const buscado = slug ?? `noticia-${idResidual}`;
+
+        let noticia = await obtenerNoticiaPorSlug(buscado);
+
+        // RLS no devuelve lo archivado en la consulta normal (y debe seguir
+        // sin hacerlo: así la portada no se ensucia). Si no aparece, puede
+        // ser una noticia del histórico y se abre en versión compacta.
+        if (!noticia) {
+            noticia = await obtenerNoticiaArchivada(buscado).catch(() => null);
+        }
 
         if (!noticia) {
             mostrarError(contenedor, 'Noticia no encontrada o no publicada.');
+            return;
+        }
+
+        if (noticia.historico) {
+            renderCompacta(contenedor, noticia);
+            document.title = `${noticia.titulo} | Nexo Sistémico`;
             return;
         }
 
@@ -118,6 +134,45 @@ function renderizarCabecera(contenedor, noticia) {
 
         <div class="post-body" id="cuerpo-texto">
             <div class="loader-simple">Cargando texto completo…</div>
+        </div>
+    `;
+}
+
+
+/**
+ * Detalle de una noticia del histórico: versión compacta y simplificada.
+ * Sin hero grande ni rejilla de metadatos: aviso, título, resumen y texto.
+ */
+function renderCompacta(contenedor, noticia) {
+
+    const fechaISO = noticia.fechaOrdenable || '';
+    const fechaTexto = noticia.fecha || (fechaISO ? formatearFecha(fechaISO) : 'Sin fecha');
+
+    const cuerpo = prepararContenido(noticia.contenido)
+        || '<p class="lead"><em>(Texto completo no disponible)</em></p>';
+
+    contenedor.innerHTML = `
+        <a href="/historico?seccion=noticias" class="post-back">← Volver al histórico</a>
+
+        <div class="post-aviso-historico">
+            <strong>${escapar(noticia.historico || 'Archivado')}</strong>
+            <span>
+                Esta noticia ya no aparece en la portada. Se publicó el
+                ${escapar(fechaTexto)} y puedes leerla completa aquí.
+            </span>
+        </div>
+
+        <header class="post-historico-cabecera">
+            ${noticia.categoria
+                ? `<span class="post-kicker dot" style="color:${escapar(noticia.color || 'var(--scarlet)')}">${escapar(noticia.categoria)}</span>`
+                : ''
+            }
+            <h1 class="post-title">${escapar(noticia.titulo)}</h1>
+            ${noticia.resumen ? `<p class="post-lead">${escapar(noticia.resumen)}</p>` : ''}
+        </header>
+
+        <div class="post-body" id="cuerpo-texto">
+            ${cuerpo}
         </div>
     `;
 }

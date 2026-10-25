@@ -1,0 +1,175 @@
+/* ============================================================
+   css/historico.css — Página del histórico (/historico)
+
+   Una pestaña por sección y una lista de SOLO títulos: el histórico es
+   un índice del pasado, no una segunda portada. El enlace de "Histórico"
+   que lleva aquí desde /noticias y /eventos vive en css/blog.css
+   (clase .historico-pie), porque esas páginas no cargan este archivo.
+   ============================================================ */
+
+/* ── Pestañas ─────────────────────────────────────────────── */
+
+.historico-tabs {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 26px;
+}
+
+.historico-tab {
+    padding: 10px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+
+    background: transparent;
+    color: var(--text-2);
+
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: color var(--ease), background var(--ease), border-color var(--ease);
+}
+
+.historico-tab:hover {
+    color: var(--white);
+    border-color: var(--antler);
+}
+
+.historico-tab:focus-visible {
+    outline: 2px solid var(--scarlet);
+    outline-offset: 2px;
+}
+
+.historico-tab.activa {
+    background: var(--scarlet);
+    border-color: var(--scarlet);
+
+    color: #fff;
+}
+
+
+/* ── Lista de títulos ─────────────────────────────────────── */
+
+.historico-lista {
+    list-style: none;
+
+    margin: 0;
+    padding: 0;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.historico-lista li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.historico-lista a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding: 17px 4px;
+
+    color: var(--text-1);
+    text-decoration: none;
+
+    font-size: 1.02rem;
+    font-weight: 600;
+
+    transition: color var(--ease), padding-left var(--ease);
+}
+
+.historico-lista a::after {
+    content: '→';
+
+    color: var(--antler);
+
+    font-weight: 400;
+    transition: color var(--ease), transform var(--ease);
+}
+
+.historico-lista a:hover {
+    color: var(--scarlet);
+
+    padding-left: 8px;
+}
+
+.historico-lista a:hover::after {
+    color: var(--scarlet);
+
+    transform: translateX(4px);
+}
+
+.historico-lista a:focus-visible {
+    outline: 2px solid var(--scarlet);
+    outline-offset: 3px;
+}
+
+.historico-titulo {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ── Estados vacío / cargando / error ─────────────────────── */
+
+.historico-cargando {
+    padding: 30px 4px;
+
+    border-bottom: 0;
+
+    color: var(--antler);
+    text-align: left;
+}
+
+.historico-vacio {
+    padding: 30px 4px;
+
+    color: var(--text-2);
+}
+
+.historico-nota {
+    margin-top: 22px;
+
+    padding: 16px 18px;
+
+    border: 1px solid rgba(227, 28, 37, 0.45);
+    border-radius: 10px;
+
+    background: var(--scarlet-glow);
+
+    color: var(--text-1);
+
+    font-size: 0.95rem;
+}
+
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+
+    .historico-tabs {
+        flex-direction: column;
+    }
+
+    .historico-tab {
+        width: 100%;
+    }
+
+    .historico-lista a {
+        padding: 15px 2px;
+
+        font-size: 0.98rem;
+    }
+
+}
