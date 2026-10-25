@@ -35,6 +35,10 @@ import {
     STORAGE_BUCKET
 } from './utils.js';
 
+// Editor enriquecido (negrita, cursiva, alineación, pegado limpio de Word)
+// para el contenido de noticias, eventos y anuncios.
+import { montarEditorRico, asignarValorEditorRico, textoPlano } from './editor-rico.js';
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    STORE — sesión del administrador (una sola verificación, caché de 5 min)
@@ -486,7 +490,9 @@ function prepararContador(raiz, selectorCampo, selectorContador, maximo) {
     if (!campo || !contador) return () => {};
 
     const actualizar = () => {
-        contador.textContent = `${campo.value.length} / ${maximo}`;
+        // Con el editor enriquecido el valor es HTML: se cuenta el texto
+        // visible, no las etiquetas.
+        contador.textContent = `${textoPlano(campo.value).length} / ${maximo}`;
     };
 
     campo.addEventListener('input', actualizar);
@@ -501,6 +507,10 @@ function rellenar(raiz, datos) {
         const control = raiz.querySelector(`[name="${campo}"]`);
         if (!control) continue;
         if (control.type === 'checkbox') continue;
+
+        // Campos con editor enriquecido montado: el valor va al editor
+        // (que a su vez actualiza el textarea oculto con el HTML).
+        if (asignarValorEditorRico(control, valor)) continue;
 
         if (control.type === 'datetime-local') {
             control.value = convertirFechaParaInput(valor);
@@ -1535,7 +1545,9 @@ async function vistaNoticia(id) {
                     ></textarea>
 
                     <small class="form-help">
-                        Por ahora utilizamos texto plano.
+                        Editor enriquecido: negrita, cursiva, títulos, listas,
+                        citas y alineación. Puedes pegar texto de Word o de un
+                        blog y se limpia solo (conserva el formato básico).
                     </small>
                 </div>
             </div>`,
@@ -1595,6 +1607,10 @@ async function vistaNoticia(id) {
     const actualizarContador = prepararContador(el, '#resumen', '#resumen-counter', 600);
     const describirEstado = conectarAyudaEstado(el, ['#fecha-publicacion']);
 
+    // Editor enriquecido sobre el textarea de contenido (queda oculto y
+    // sigue guardando el HTML, así que el resto del formulario no cambia).
+    montarEditorRico(el, '#contenido');
+
     if (editando) {
         const registro = await cargarRegistro(
             'noticias',
@@ -1632,7 +1648,7 @@ async function vistaNoticia(id) {
                 return { error: 'El resumen debe tener al menos 10 caracteres.' };
             }
 
-            if (contenido.length < 20) {
+            if (textoPlano(contenido).length < 20) {
                 return { error: 'El contenido debe tener al menos 20 caracteres.' };
             }
 
@@ -1743,6 +1759,12 @@ async function vistaEvento(id) {
                         required
                         placeholder="Descripción completa del evento..."
                     ></textarea>
+
+                    <small class="form-help">
+                        Editor enriquecido: negrita, cursiva, títulos, listas,
+                        citas y alineación. Puedes pegar texto de Word o de un
+                        blog y se limpia solo (conserva el formato básico).
+                    </small>
                 </div>
 
                 <div class="form-group">
@@ -1839,6 +1861,9 @@ async function vistaEvento(id) {
 
     const describirEstado = conectarAyudaEstado(el, ['#fecha-inicio', '#fecha-fin']);
 
+    // Editor enriquecido sobre el textarea de contenido (queda oculto).
+    montarEditorRico(el, '#contenido');
+
     if (editando) {
         const registro = await cargarRegistro(
             'eventos',
@@ -1874,7 +1899,7 @@ async function vistaEvento(id) {
             if (!titulo) return { error: 'El título es obligatorio.' };
             if (!slugFinal) return { error: 'El título debe generar un slug válido (solo letras y números).' };
             if (resumen.length < 10) return { error: 'El resumen debe tener al menos 10 caracteres.' };
-            if (contenido.length < 20) return { error: 'El contenido debe tener al menos 20 caracteres.' };
+            if (textoPlano(contenido).length < 20) return { error: 'El contenido debe tener al menos 20 caracteres.' };
             if (!fechaInicio) return { error: 'La fecha de inicio es obligatoria.' };
 
             if (fechaInicio && fechaFin && fechaFin < fechaInicio) {
@@ -1955,7 +1980,7 @@ async function vistaAnuncio(id) {
                     ></textarea>
 
                     <div class="field-meta">
-                        <small>Hasta 600 caracteres.</small>
+                        <small>Hasta 600 caracteres (el formato no cuenta).</small>
                         <small id="texto-counter">0 / 600</small>
                     </div>
                 </div>
@@ -2101,6 +2126,9 @@ async function vistaAnuncio(id) {
     const portada = prepararPortada(el, mensajes.mostrar);
     const actualizarContador = prepararContador(el, '#texto', '#texto-counter', 600);
 
+    // Editor enriquecido sobre el textarea del texto (queda oculto).
+    montarEditorRico(el, '#texto');
+
     const vigenciaInicio = conectarIndefinido(
         $('#fecha-inicio', el),
         $('#fecha-inicio-indefinido', el)
@@ -2127,6 +2155,16 @@ async function vistaAnuncio(id) {
         const texto = $('#texto', el);
         texto.required = modo !== 'imagen';
         texto.disabled = modo === 'imagen';
+
+        // Con editor enriquecido, el required nativo apuntaría a un campo
+        // oculto: la validación la hace construirDatos(). El editor se
+        // oculta junto al textarea en el modo "solo imagen".
+        const editor = texto.previousElementSibling;
+
+        if (editor && editor.classList.contains('editor-rico')) {
+            texto.required = false;
+            editor.hidden = texto.disabled;
+        }
     };
 
     const sincronizarDestino = () => {
@@ -2184,17 +2222,18 @@ async function vistaAnuncio(id) {
 
             const titulo = $('#titulo', el).value.trim();
             const texto = $('#texto', el).value.trim();
+            const textoVisible = textoPlano(texto);
             const destinoUrl = $('#destino-url', el).value.trim();
 
             const fechaInicio = vigenciaInicio.leer();
             const fechaFin = vigenciaFin.leer();
 
             // Solo el modo "imagen" puede quedarse sin texto.
-            if (modo !== 'imagen' && texto.length < 3) {
+            if (modo !== 'imagen' && textoVisible.length < 3) {
                 return { error: 'El texto es obligatorio (mínimo 3 caracteres).' };
             }
 
-            if (texto.length > 600) {
+            if (textoVisible.length > 600) {
                 return { error: 'El texto supera los 600 caracteres.' };
             }
 

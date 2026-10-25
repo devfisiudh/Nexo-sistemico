@@ -5,7 +5,7 @@
 
 import { obtenerEventoPorSlug } from './data/eventos.js';
 import { escapar } from './utils/formato.js';
-import { sanitizar } from './utils/sanitizar.js';
+import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -65,7 +65,7 @@ function renderDetalle(contenedor, evento) {
         : '<span class="post-hero-placeholder" aria-hidden="true">IMAGEN</span>';
 
     // El cuerpo puede venir vacío; en ese caso mostramos el resumen.
-    const cuerpo = sanitizar(evento.contenido)
+    const cuerpo = prepararContenido(evento.contenido)
         || `<p class="lead">${escapar(evento.resumen)}</p>`;
 
     const cta = evento.tieneInscripcion && evento.urlInscripcion

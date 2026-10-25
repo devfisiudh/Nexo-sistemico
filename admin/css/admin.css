@@ -986,6 +986,211 @@ button:disabled {
 }
 
 
+/* ── Editor enriquecido ─────────────────────────────────────────────────────
+   Barra de herramientas + área contenteditable sobre el textarea de
+   contenido (noticias, eventos y anuncios). El textarea queda oculto y
+   guarda el HTML resultante, así que toda la lógica de formulario,
+   contadores y validaciones sigue funcionando igual. */
+
+.editor-rico {
+    width: 100%;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+
+    background: #fff;
+
+    overflow: hidden;
+}
+
+.editor-rico:focus-within {
+    border-color: #a4161a;
+}
+
+
+.editor-rico-barra {
+    display: flex;
+    /* Siempre en horizontal: si la columna es estrecha, la barra hace scroll
+       en vez de envolver los botones en varias filas. */
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+
+    padding: 6px 8px;
+
+    background: #f7f7f7;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+
+.er-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* La regla global `button { width: 100% }` estira cada botón a todo el
+       ancho y la barra se apila en columna: aquí se recupera el ancho
+       contenido para que la barra quede en horizontal. */
+    width: auto;
+    min-width: 28px;
+    height: 30px;
+    padding: 0 6px;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: #333;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.er-btn:hover {
+    background: #e9e9e9;
+}
+
+.er-btn:focus-visible {
+    outline: 2px solid #a4161a;
+    outline-offset: 1px;
+}
+
+.er-btn.er-activo {
+    background: #a4161a;
+    border-color: #a4161a;
+
+    color: #fff;
+}
+
+.er-btn svg {
+    width: 15px;
+    height: 15px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.er-negrita { font-weight: 800; }
+.er-cursiva { font-style: italic; font-family: Georgia, 'Times New Roman', serif; }
+.er-subrayado { text-decoration: underline; }
+.er-tachado { text-decoration: line-through; }
+.er-mayusculas { font-weight: 700; letter-spacing: 0.02em; }
+
+
+.er-sep {
+    width: 1px;
+    height: 20px;
+
+    /* Margen ajustado: con 5px los 17 controles no cabían en una fila. */
+    margin: 0 3px;
+
+    background: #dcdcdc;
+}
+
+
+/* El selector se anida en .editor-rico para ganarle a `.editor-card select`
+   (que estira el desplegable a todo el ancho y empuja la barra a columna). */
+.editor-rico .er-formato {
+    width: auto;
+    min-width: 132px;
+    height: 30px;
+
+    padding: 0 6px;
+
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #333;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+
+.editor-rico-cuerpo {
+    position: relative;
+
+    min-height: 220px;
+    max-height: 460px;
+    overflow-y: auto;
+
+    padding: 14px;
+
+    color: #222;
+
+    font-size: 14.5px;
+    line-height: 1.65;
+
+    outline: none;
+}
+
+.editor-rico-cuerpo p { margin: 0 0 0.75em; }
+.editor-rico-cuerpo p:last-child { margin-bottom: 0; }
+.editor-rico-cuerpo h2 { margin: 0.4em 0 0.5em; font-size: 1.35em; line-height: 1.3; }
+.editor-rico-cuerpo h3 { margin: 0.4em 0 0.5em; font-size: 1.16em; line-height: 1.3; }
+.editor-rico-cuerpo h4 { margin: 0.4em 0 0.5em; font-size: 1.05em; line-height: 1.3; }
+.editor-rico-cuerpo blockquote {
+    margin: 0.6em 0;
+    padding: 4px 0 4px 14px;
+
+    border-left: 3px solid #a4161a;
+
+    color: #555;
+    font-style: italic;
+}
+.editor-rico-cuerpo ul,
+.editor-rico-cuerpo ol { margin: 0.5em 0; padding-left: 1.5em; }
+.editor-rico-cuerpo li { margin: 0.15em 0; }
+.editor-rico-cuerpo hr {
+    border: 0;
+    border-top: 1px solid #d5d5d5;
+    margin: 1em 0;
+}
+.editor-rico-cuerpo img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+.editor-rico-cuerpo a { color: #a4161a; }
+
+/* Alineación: se guarda como clase (el sanitizador del portal elimina los
+   atributos style, pero las clases sí se conservan). */
+.editor-rico-cuerpo .txt-centro { text-align: center; }
+.editor-rico-cuerpo .txt-der { text-align: right; }
+.editor-rico-cuerpo .txt-justificado { text-align: justify; }
+
+
+.editor-rico-cuerpo::before {
+    content: attr(data-placeholder);
+    display: none;
+}
+
+.editor-rico-cuerpo[data-vacio="true"]::before {
+    display: block;
+
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+
+    color: #9a9a9a;
+
+    pointer-events: none;
+}
+
+
 /* ── Vigencia indefinida ───────────────────────────────────────────────────
    Checkbox que acompaña a los campos de fecha. Marcado significa NULL en
    la base: "sin fecha de fin", "sin límite", etc.

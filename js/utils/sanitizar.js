@@ -5,14 +5,14 @@
 // panel— podía inyectar <script> y ejecutarlo en el navegador de cada visitante.
 //
 // Usa DOMParser en vez de expresiones regulares: el parser real del navegador
-// normaliza el documento, así que no nos fiamos de heurísticas de texto.
-
+// normaliza el documento, así que no nos fiamos de heurísticas de texto.// Nota: `strike` (equivalente obsoleto de <s>) lo escribe Chrome al tachar
+// desde el editor enriquecido del panel: sin él, el tachado se perdería aquí.
 const ETIETAS_PERMITIDAS = new Set([
     'a', 'abbr', 'b', 'blockquote', 'br', 'caption', 'cite', 'code', 'col',
     'colgroup', 'dd', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'h1',
     'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'li', 'mark', 'ol', 'p',
-    'pre', 's', 'small', 'span', 'strong', 'sub', 'sup', 'table', 'tbody',
-    'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul'
+    'pre', 's', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'table',
+    'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul'
 ]);
 
 // Se conservan, pero sin texto: nunca queremos su contenido en la página.
@@ -157,5 +157,38 @@ function esUrlSegura(valor, atributo) {
         return false;
 
     }
+
+}
+
+
+/**
+ * Prepara el contenido guardado para mostrarlo en el portal.
+ *
+ * El editor enriquecido del panel guarda HTML (<p>, <b>, <h2>, listas,
+ * alineaciones...): eso pasa por la allowlist de sanitizar().
+ *
+ * Lo antiguo o escrito a mano llega como texto plano con saltos de línea:
+ * se escapa y se convierte en párrafos, sin dejar entrar ninguna etiqueta.
+ *
+ * @param {string} contenido
+ * @returns {string}
+ */
+export function prepararContenido(contenido) {
+
+    if (!contenido) return '';
+
+    const texto = String(contenido);
+
+    if (/<\/?[a-z][^>]*>/i.test(texto)) {
+        return sanitizar(texto);
+    }
+
+    const caja = document.createElement('div');
+    caja.textContent = texto;
+
+    return caja.innerHTML
+        .split(/\n{2,}/)
+        .map((bloque) => `<p>${bloque.trim().replace(/\n/g, '<br>')}</p>`)
+        .join('');
 
 }

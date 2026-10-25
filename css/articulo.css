@@ -183,6 +183,20 @@
     margin-bottom: 24px;
 }
 
+/* Alineación elegida en el editor enriquecido del panel. Se guarda como
+   clase porque el sanitizador elimina los atributos style. */
+.post-body .txt-centro {
+    text-align: center;
+}
+
+.post-body .txt-der {
+    text-align: right;
+}
+
+.post-body .txt-justificado {
+    text-align: justify;
+}
+
 .post-body strong {
     color: var(--white);
     font-weight: 600;

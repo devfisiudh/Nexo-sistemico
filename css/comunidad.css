@@ -301,6 +301,52 @@
     flex: 1;
 }
 
+/* Contenido con formato del editor enriquecido: párrafos, listas, citas,
+   títulos y alineaciones dentro del aviso. */
+.anuncio-texto p {
+    margin: 0 0 8px;
+}
+
+.anuncio-texto p:last-child {
+    margin-bottom: 0;
+}
+
+.anuncio-texto ul,
+.anuncio-texto ol {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.anuncio-texto li {
+    margin: 2px 0;
+}
+
+.anuncio-texto h2,
+.anuncio-texto h3,
+.anuncio-texto h4 {
+    margin: 8px 0 4px;
+    color: #f0f0f0;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+
+.anuncio-texto blockquote {
+    margin: 6px 0;
+    padding-left: 10px;
+    border-left: 3px solid #e63946;
+    color: #aaa;
+    font-style: italic;
+}
+
+.anuncio-texto .txt-centro { text-align: center; }
+.anuncio-texto .txt-der { text-align: right; }
+.anuncio-texto .txt-justificado { text-align: justify; }
+
+.anuncio-texto a {
+    color: #e63946;
+    text-decoration: underline;
+}
+
 /* Título opcional del anuncio. La tabla tiene la columna `titulo`; el JSON
    histórico no la usaba, así que muchas tarjetas saldrán sin ella. */
 .anuncio-titulo {

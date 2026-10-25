@@ -7,7 +7,7 @@
 
 import { obtenerNoticiaPorSlug } from './data/noticias.js';
 import { escapar } from './utils/formato.js';
-import { sanitizar } from './utils/sanitizar.js';
+import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,8 +41,9 @@ async function cargarArticulo() {
 
         renderizarCabecera(contenedor, noticia);
 
-        // El cuerpo llega en texto plano con HTML: pasa por la allowlist.
-        const cuerpo = sanitizar(noticia.contenido)
+        // El cuerpo puede llegar como HTML del editor enriquecido (allowlist)
+        // o como texto plano antiguo: prepararContenido resuelve ambos.
+        const cuerpo = prepararContenido(noticia.contenido)
             || '<p class="lead"><em>(Artículo completo no disponible)</em></p>';
 
         document.getElementById('cuerpo-texto').innerHTML = cuerpo;

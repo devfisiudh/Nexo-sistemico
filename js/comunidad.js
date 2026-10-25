@@ -5,6 +5,7 @@
 
 import { listarAnuncios } from './data/anuncios.js';
 import { escapar } from './utils/formato.js';
+import { prepararContenido } from './utils/sanitizar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarAnuncios();
@@ -90,7 +91,7 @@ function cuerpoAnuncio(anuncio) {
         ? ''
         : `<div class="anuncio-body">
                ${anuncio.titulo ? `<h4 class="anuncio-titulo">${escapar(anuncio.titulo)}</h4>` : ''}
-               <p class="anuncio-texto">${escapar(anuncio.texto)}</p>
+               <div class="anuncio-texto">${prepararContenido(anuncio.texto)}</div>
                ${anuncio.autor ? `<span class="anuncio-autor">${escapar(anuncio.autor)}</span>` : ''}
            </div>`;
 
