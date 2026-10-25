@@ -240,10 +240,10 @@
     text-transform: uppercase;
 }
 
-/* GRID DE ANUNCIOS */
+/* GRID DE ANUNCIOS — matriz de 4 x 3 (12 por pantalla en escritorio) */
 .tablon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 28px;
 }
@@ -424,6 +424,13 @@
 }
 
 /* RESPONSIVO TABLÓN */
+/* Portátil estrecho: 3 columnas siguen cabiendo */
+@media (max-width: 1000px) {
+    .tablon-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .tablon-grid {
         grid-template-columns: 1fr 1fr;

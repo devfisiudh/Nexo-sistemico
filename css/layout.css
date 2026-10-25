@@ -42,36 +42,47 @@
     color: var(--scarlet);
 }
 
-/* ENLACES DEL MENÚ */
+/* ENLACES DEL MENÚ — formato discreto (versalitas) para saturar menos */
 .nav-menu {
     display: flex;
     list-style: none;
-    gap: 25px;
+    gap: 20px;
     align-items: center;
 }
 
 .nav-link {
     color: var(--antler); /* Gris claro */
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-    color: var(--scarlet); /* Rojo al pasar el mouse */
+    color: var(--white); /* Blanco al pasar el mouse */
+    text-decoration: underline;
+    text-decoration-color: var(--scarlet);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
 }
 
-/* BOTÓN ESPECIAL */
+/* BOTÓN ESPECIAL — píldora de contorno: menos ruido visual que el bloque rojo */
 .nav-btn-special {
-    background-color: var(--scarlet);
+    background-color: transparent;
     color: var(--white);
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background 0.3s;
+    border: 1px solid var(--scarlet);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: background 0.3s, color 0.3s;
 }
 
 .nav-btn-special:hover {
-    background-color: #b9151c; /* Rojo más oscuro */
+    background-color: var(--scarlet); /* Se llena de rojo al pasar el mouse */
     color: var(--white);
 }
 
@@ -239,8 +250,17 @@
    RESPONSIVO - NAVBAR & FOOTER
    ============================================================ */
 
-/* TABLET (max 768px) */
-@media (max-width: 768px) {
+/* Entre 1025 y 1150px la barra va justa: se oculta el nombre en texto
+   (el logo en imagen ya identifica la marca). En móvil vuelve a verse. */
+@media (max-width: 1150px) and (min-width: 1025px) {
+    .brand-name {
+        display: none;
+    }
+}
+
+/* PORTÁTIL (max 1024px): el menú colapsa antes para que la barra
+   no se sature con los 7 enlaces + botón. */
+@media (max-width: 1024px) {
 
     /* --- NAVBAR --- */
     .hamburger {
@@ -272,8 +292,8 @@
 
     .nav-link {
         display: block;
-        padding: 15px 20px;
-        font-size: 1.1rem;
+        padding: 14px 20px;
+        font-size: 1rem;
         border-bottom: 1px solid #1a1a1a;
     }
 
@@ -281,6 +301,7 @@
         display: inline-block;
         margin: 10px 0;
         padding: 12px 30px;
+        font-size: 0.85rem;
     }
 
     /* Animación hamburguesa → X */
@@ -296,6 +317,10 @@
     .bar {
         transition: transform 0.3s, opacity 0.3s;
     }
+}
+
+/* TABLET (max 768px) */
+@media (max-width: 768px) {
 
     /* --- FOOTER --- */
     .footer-container {
