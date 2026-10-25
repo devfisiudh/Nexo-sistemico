@@ -121,7 +121,10 @@
         hidden
     >
 
-        <aside class="admin-sidebar">
+        <aside
+            id="admin-sidebar"
+            class="admin-sidebar"
+        >
 
             <div class="sidebar-brand">
                 <span class="sidebar-brand-small">
@@ -196,9 +199,30 @@
         </aside>
 
 
+        <!-- Tapa del menú en móvil: al pulsarla se cierra el panel lateral -->
+        <div
+            id="sidebar-overlay"
+            class="sidebar-overlay"
+            hidden
+        ></div>
+
+
         <div class="admin-main">
 
             <header class="admin-header">
+
+                <button
+                    id="menu-toggle"
+                    class="menu-toggle"
+                    type="button"
+                    aria-controls="admin-sidebar"
+                    aria-expanded="false"
+                    aria-label="Abrir el menú"
+                >
+                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path d="M2 4h12M2 8h12M2 12h12" />
+                    </svg>
+                </button>
 
                 <div>
                     <h1 id="header-title">

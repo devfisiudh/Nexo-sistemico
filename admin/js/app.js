@@ -224,6 +224,228 @@ function mensajeSupabase(error, porDefecto) {
 
 
 /* ══════════════════════════════════════════════════════════════════════════
+   CONFIRMACIÓN Y BORRADO
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Diálogo de confirmación que cita el nombre del registro.
+ * Devuelve `true` solo si se pulsa el botón de confirmar (o Intro).
+ *
+ * Se usa para acciones destructivas (borrar publicación o cuenta): el aviso
+ * siempre lleva el título exacto para que no se borre algo por error.
+ */
+function confirmarAccion({ titulo, mensaje, confirmar = 'Eliminar' }) {
+
+    return new Promise((resolver) => {
+
+        const fondo = document.createElement('div');
+        fondo.className = 'confirmar-fondo';
+        fondo.innerHTML = `
+            <div
+                class="confirmar-caja"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="confirmar-titulo"
+            >
+                <h3 id="confirmar-titulo">${esc(titulo)}</h3>
+                <p>${mensaje}</p>
+
+                <div class="confirmar-acciones">
+                    <button type="button" class="confirmar-cancelar">Cancelar</button>
+                    <button type="button" class="confirmar-ok">${esc(confirmar)}</button>
+                </div>
+            </div>`;
+
+        const cerrar = (resultado) => {
+            document.removeEventListener('keydown', alTeclar);
+            fondo.remove();
+            resolver(resultado);
+        };
+
+        const alTeclar = (evento) => {
+            if (evento.key === 'Escape') { evento.preventDefault(); cerrar(false); }
+            if (evento.key === 'Enter' && evento.target?.classList.contains('confirmar-ok')) {
+                evento.preventDefault();
+                cerrar(true);
+            }
+        };
+
+        fondo.addEventListener('click', (evento) => {
+            if (evento.target === fondo) cerrar(false);   // clic fuera
+        });
+
+        fondo.querySelector('.confirmar-cancelar').addEventListener('click', () => cerrar(false));
+        fondo.querySelector('.confirmar-ok').addEventListener('click', () => cerrar(true));
+
+        document.addEventListener('keydown', alTeclar);
+        document.body.appendChild(fondo);
+        fondo.querySelector('.confirmar-cancelar').focus();
+    });
+}
+
+/**
+ * Borra una publicación y su imagen de portada.
+ *
+ * El registro primero: si el storage fallara después queda un archivo
+ * huérfano en el bucket (solo ensucia), pero al revés quedaría un registro
+ * apuntando a una imagen que ya no existe y la portada se rompería en el
+ * portal.
+ */
+async function eliminarPublicacion({ tabla, id, imagenUrl }) {
+
+    const { error } = await supabase.from(tabla).delete().eq('id', id);
+
+    if (error) throw error;
+
+    const path = imagenUrl ? obtenerPathDesdeUrl(imagenUrl) : null;
+
+    if (path) {
+        const { error: errorImagen } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove([path]);
+
+        // El registro ya está fuera: una imagen que no se pudo borrar no
+        // debe devolver un error al usuario.
+        if (errorImagen) console.warn('No se pudo borrar la imagen de portada:', errorImagen);
+    }
+}
+
+/** Nivel mínimo para borrar contenido: ni los editores. */
+const puedeBorrarContenido = () => (
+    nivelDe(store.admin?.perfil) >= NIVEL_ACCESO.ADMINISTRADOR
+);
+
+/**
+ * Aviso que una vista muestra nada más cargarse (p. ej. «cuenta creada» o
+ * «cuenta eliminada»), porque tras esas acciones se navega enseguida.
+ */
+let avisoDeVista = null;
+
+function dejarAviso(texto, tipo = 'success') {
+    avisoDeVista = { texto, tipo };
+}
+
+function consumirAviso() {
+    const aviso = avisoDeVista;
+    avisoDeVista = null;
+    return aviso;
+}
+
+/**
+ * ¿El fallo viene de una RPC que todavía no está en la base?
+ * PostgREST responde PGRST202 (o un mensaje nombrando la función).
+ */
+function faltaLaFuncion(error, nombre) {
+
+    if (!error) return false;
+
+    const mensaje = String(error.message ?? '');
+
+    return error.code === 'PGRST202'
+        || new RegExp(nombre, 'i').test(mensaje)
+        || /could not find the function/i.test(mensaje);
+}
+
+/** Etiquetas para hablar de cada publicación al borrarla. */
+const ETIQUETAS_PUBLICACION = {
+    noticias: { una: 'la noticia', nombre: 'Noticia' },
+    eventos: { una: 'el evento', nombre: 'Evento' },
+    anuncios: { una: 'el anuncio', nombre: 'Anuncio' }
+};
+
+/**
+ * Tarjeta «Zona de peligro» del editor de una publicación.
+ * Solo se pinta al editar y solo por encima del rol Editor.
+ */
+function tarjetaEliminarPublicacion(editando, tabla) {
+
+    if (!editando || !puedeBorrarContenido()) return '';
+
+    const etiqueta = ETIQUETAS_PUBLICACION[tabla];
+    if (!etiqueta) return '';
+
+    return `
+        <div class="editor-card editor-card-peligro">
+            <h3>Zona de peligro</h3>
+
+            <p class="form-help">
+                Borra ${etiqueta.una} de forma definitiva, junto con su
+                imagen de portada.
+            </p>
+
+            <button
+                type="button"
+                class="delete-button"
+                data-tabla="${tabla}"
+            >Eliminar ${etiqueta.una.replace(/^(el|la) /, '')}</button>
+        </div>`;
+}
+
+/**
+ * Borrado desde dentro del editor (un único oyente para toda la SPA).
+ * La confirmación cita el título que esté escrito en el campo, y al
+ * terminar se vuelve al listado con un aviso.
+ */
+function conectarBorradoPublicaciones() {
+
+    document.addEventListener('click', async (evento) => {
+
+        const boton = evento.target.closest?.('.delete-button[data-tabla]');
+        if (!boton || boton.disabled) return;
+
+        const raiz = boton.closest('.view-enter');
+        const tabla = boton.dataset.tabla;
+        const { seccion, id } = parsearHash();
+        const etiqueta = ETIQUETAS_PUBLICACION[tabla];
+
+        if (!etiqueta || !id) return;
+
+        const titular = (raiz?.querySelector('#titulo')?.value ?? '').trim() || 'Sin título';
+
+        const seguro = await confirmarAccion({
+            titulo: `Eliminar ${etiqueta.una}`,
+            mensaje: `Vas a borrar <strong>«${esc(titular)}»</strong> de forma definitiva, junto con su imagen de portada. Esta acción no se puede deshacer.`,
+            confirmar: 'Eliminar definitivamente'
+        });
+
+        if (!seguro) return;
+
+        const textoOriginal = boton.textContent;
+        boton.disabled = true;
+        boton.textContent = 'Eliminando...';
+
+        try {
+            const { data: fila, error } = await supabase
+                .from(tabla)
+                .select('imagen_url')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+
+            await eliminarPublicacion({ tabla, id, imagenUrl: fila?.imagen_url });
+
+            dejarAviso(`«${titular}» se eliminó definitivamente.`, 'success');
+            irA(`#/${seccion}`);
+        } catch (error) {
+            console.error('Borrado:', error);
+
+            boton.disabled = false;
+            boton.textContent = textoOriginal;
+
+            const zona = raiz?.querySelector('#editor-message');
+            if (zona) {
+                zona.textContent = mensajeSupabase(error, 'No se pudo eliminar el registro.');
+                zona.className = 'editor-message editor-message-error';
+                zona.hidden = false;
+                zona.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    });
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
    METADATOS DE SECCIONES
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -236,13 +458,15 @@ const SECCIONES = {
         titulo: 'Noticias',
         subtitulo: 'Gestión de publicaciones del portal',
         nuevo: 'Nueva noticia',
-        editar: 'Editar noticia'
+        editar: 'Editar noticia',
+        historia: 'Historia de noticias'
     },
     eventos: {
         titulo: 'Eventos',
         subtitulo: 'Agenda académica de la facultad',
         nuevo: 'Nuevo evento',
-        editar: 'Editar evento'
+        editar: 'Editar evento',
+        historia: 'Historia de eventos'
     },
     anuncios: {
         titulo: 'Anuncios',
@@ -298,6 +522,60 @@ function mostrarPantallaAuth() {
     pantallaCarga.hidden = true;
     aplicacion.hidden = true;
     pantallaAuth.hidden = false;
+}
+
+
+/* ── Menú lateral en pantallas pequeñas ───────────────────────────────────
+   Por debajo de ~900px la barra lateral deja de caber y pasa a ser un panel
+   que se saca desde la izquierda con el botón del header. En escritorio el
+   botón está oculto con CSS y el menú se ve siempre: este código solo
+   cambia la clase `abierto`, así que en grande no hace nada. */
+
+function alternarMenuMovil(abrir) {
+
+    const sidebar = $('#admin-sidebar');
+    const boton = $('#menu-toggle');
+    const fondo = $('#sidebar-overlay');
+
+    if (!sidebar || !boton) return;
+
+    sidebar.classList.toggle('abierto', Boolean(abrir));
+    boton.setAttribute('aria-expanded', String(Boolean(abrir)));
+    boton.setAttribute('aria-label', abrir ? 'Cerrar el menú' : 'Abrir el menú');
+
+    if (fondo) fondo.hidden = !abrir;
+
+    // Sin scroll de fondo mientras el menú está encima.
+    document.body.classList.toggle('menu-abierto', Boolean(abrir));
+}
+
+function conectarMenuMovil() {
+
+    const boton = $('#menu-toggle');
+    const sidebar = $('#admin-sidebar');
+    const fondo = $('#sidebar-overlay');
+
+    if (!boton || !sidebar) return;
+
+    boton.addEventListener('click', () => {
+        alternarMenuMovil(!sidebar.classList.contains('abierto'));
+    });
+
+    fondo?.addEventListener('click', () => alternarMenuMovil(false));
+
+    // Al pulsar un enlace del menú se navega y el panel se cierra solo.
+    sidebar.addEventListener('click', (evento) => {
+        if (evento.target.closest('.sidebar-link')) alternarMenuMovil(false);
+    });
+
+    document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape') alternarMenuMovil(false);
+    });
+}
+
+/** Al cambiar de sección el menú no debe quedarse abierto encima. */
+function cerrarMenuMovil() {
+    if ($('#admin-sidebar')?.classList.contains('abierto')) alternarMenuMovil(false);
 }
 
 
@@ -791,6 +1069,9 @@ async function vistaListado(config) {
 
     const abarca = config.columnas.length + 1;
 
+    // Borrar solo por encima de Editor (admin y cuenta principal).
+    const puedeEliminar = Boolean(config.puedeEliminar) && puedeBorrarContenido();
+
     el.innerHTML = `
         <section class="page-toolbar">
             <div>
@@ -799,9 +1080,16 @@ async function vistaListado(config) {
                 <p>${esc(config.descripcion)}</p>
             </div>
 
-            <a href="#/${config.seccion}/nuevo" class="primary-action">
-                ${esc(config.accionNuevo)}
-            </a>
+            <div class="toolbar-actions">
+                ${config.historia ? `
+                <a href="#/${config.seccion}/historia" class="secondary-action">
+                    Historia
+                </a>` : ''}
+
+                <a href="#/${config.seccion}/nuevo" class="primary-action">
+                    ${esc(config.accionNuevo)}
+                </a>
+            </div>
         </section>
 
         <section class="content-filters">
@@ -899,7 +1187,9 @@ async function vistaListado(config) {
                 : '';
 
             tr.innerHTML = config.columnas.map((columna) => columna.celda(fila)).join('')
-                + `<td class="table-actions">${selectorEstado}<a class="table-action-link" href="#/${config.seccion}/editar/${esc(fila.id)}">Editar</a></td>`;
+                + `<td class="table-actions">${selectorEstado}<a class="table-action-link" href="#/${config.seccion}/editar/${esc(fila.id)}">Editar</a>${puedeEliminar
+                    ? `<button type="button" class="table-action-link table-action-danger" data-eliminar="${esc(fila.id)}">Eliminar</button>`
+                    : ''}</td>`;
 
             const rapido = tr.querySelector('.estado-rapido');
             if (rapido) rapido.value = fila.estado ?? 'BORRADOR';
@@ -955,6 +1245,46 @@ async function vistaListado(config) {
 
     buscador.addEventListener('input', render);
 
+    // Borrado desde la tabla: confirmación con el título y borrado del
+    // registro + imagen de portada.
+    tbody.addEventListener('click', async (evento) => {
+
+        const boton = evento.target.closest?.('[data-eliminar]');
+        if (!boton || boton.disabled) return;
+
+        const fila = datos.find((d) => String(d.id) === String(boton.dataset.eliminar));
+        if (!fila) return;
+
+        const nombre = config.tituloFila ? config.tituloFila(fila) : String(fila.id);
+        const singular = config.singular ?? 'registro';
+
+        const seguro = await confirmarAccion({
+            titulo: `Eliminar ${singular}`,
+            mensaje: `Vas a borrar <strong>«${esc(nombre)}»</strong> de forma definitiva, junto con su imagen de portada. Esta acción no se puede deshacer.`,
+            confirmar: 'Eliminar definitivamente'
+        });
+
+        if (!seguro) return;
+
+        boton.disabled = true;
+
+        try {
+            await eliminarPublicacion({
+                tabla: config.tabla,
+                id: fila.id,
+                imagenUrl: fila.imagen_url
+            });
+
+            datos = datos.filter((d) => String(d.id) !== String(fila.id));
+            mostrarMensaje(`«${nombre}» se eliminó definitivamente.`, 'success');
+            render();
+        } catch (error) {
+            console.error('Borrado:', error);
+            boton.disabled = false;
+            mostrarMensaje(mensajeSupabase(error, 'No se pudo eliminar el registro.'), 'error');
+        }
+    });
+
     el.querySelectorAll('.filter-button').forEach((boton) => {
         boton.addEventListener('click', () => {
             el.querySelectorAll('.filter-button').forEach((otro) => otro.classList.remove('active'));
@@ -965,6 +1295,9 @@ async function vistaListado(config) {
     });
 
     tbody.innerHTML = `<tr><td colspan="${abarca}" class="table-message">Cargando...</td></tr>`;
+
+    const avisoInicial = consumirAviso();
+    if (avisoInicial) mostrarMensaje(avisoInicial.texto, avisoInicial.tipo);
 
     try {
         const { data, error } = await supabase
@@ -1124,6 +1457,137 @@ async function vistaArchivo() {
 }
 
 
+/**
+ * Historia de UNA sección: lo que ya no se muestra en el portal.
+ *
+ *   Noticias → archivadas (no caducan por fecha: solo tienen fecha de
+ *              publicación, no de fin).
+ *   Eventos  → archivados + vencidos (su fecha_fin ya pasó).
+ *
+ * Cada sección tiene la suya y no se mezclan tipos: para el resumen global
+ * sigue existiendo «Archivo» en el menú.
+ */
+const HISTORIA = {
+
+    noticias: {
+        tabla: 'noticias',
+        plural: 'noticias',
+        campos: 'id, titulo, slug, estado, fecha_publicacion, created_at',
+        enHistoria: (fila) => fila.estado === 'ARCHIVADO',
+        celdaFecha: (fila) => `<td>${esc(formatearFecha(fila.fecha_publicacion))}</td>`,
+        nota: 'Aquí aparecen las noticias archivadas. Para recuperar una, ábrela y vuelve a ponerla en estado Publicada.'
+    },
+
+    eventos: {
+        tabla: 'eventos',
+        plural: 'eventos',
+        campos: 'id, titulo, slug, estado, fecha_inicio, fecha_fin, created_at',
+        enHistoria: (fila) => fila.estado === 'ARCHIVADO'
+            || derivarVisibilidad({
+                estado: fila.estado,
+                fechaInicio: fila.fecha_inicio,
+                fechaFin: fila.fecha_fin
+            }).clave === 'VENCIDO',
+        celdaFecha: (fila) => `<td>${esc(formatearRango(fila.fecha_inicio, fila.fecha_fin))}</td>`,
+        nota: 'Aquí aparecen los eventos archivados y los vencidos (pasada su fecha de fin). Ábrelos para editarlos o volver a publicarlos.'
+    }
+};
+
+
+async function vistaHistoria(seccion) {
+
+    const config = HISTORIA[seccion];
+
+    if (!config) {
+        const el = document.createElement('div');
+        el.className = 'view-enter';
+        el.innerHTML = '<div class="view-loading">Esa sección no tiene historia.</div>';
+        return el;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'view-enter';
+
+    el.innerHTML = `
+        <section class="page-toolbar">
+            <div>
+                <span class="section-label">HISTORIA</span>
+                <h2>Historia de ${esc(config.plural)}</h2>
+                <p>${esc(config.nota)}</p>
+            </div>
+
+            <div class="toolbar-actions">
+                <a href="#/${seccion}" class="secondary-action">← Volver a ${esc(config.plural)}</a>
+            </div>
+        </section>
+
+        <section class="admin-table-card">
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Publicación</th>
+                            <th>Fechas</th>
+                            <th>Estado</th>
+                            <th class="table-actions-heading">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>`;
+
+    const tbody = el.querySelector('tbody');
+
+    tbody.innerHTML = `<tr><td colspan="4" class="table-message">Cargando...</td></tr>`;
+
+    try {
+        const { data, error } = await supabase
+            .from(config.tabla)
+            .select(config.campos)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const filas = (data ?? []).filter(config.enHistoria);
+
+        if (!filas.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="table-message">Todavía no hay nada en la historia de ${esc(config.plural)}.</td></tr>`;
+            return el;
+        }
+
+        const fragmento = document.createDocumentFragment();
+
+        filas.forEach((fila) => {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td>
+                    <div class="table-title">
+                        <strong>${esc(fila.titulo || 'Sin título')}</strong>
+                        <small>${esc(fila.slug ?? '')}</small>
+                    </div>
+                </td>
+                ${config.celdaFecha(fila)}
+                <td>${insigniaVisibilidad(fila)}</td>
+                <td class="table-actions">
+                    <a class="table-action-link" href="#/${seccion}/editar/${esc(fila.id)}">Editar</a>
+                </td>`;
+
+            fragmento.appendChild(tr);
+        });
+
+        tbody.innerHTML = '';
+        tbody.appendChild(fragmento);
+    } catch (error) {
+        console.error('Error cargando la historia:', error);
+        tbody.innerHTML = `<tr><td colspan="4" class="table-message">No se pudo cargar la historia.</td></tr>`;
+    }
+
+    return el;
+}
+
+
 const LISTADOS = {
 
     noticias: () => vistaListado({
@@ -1132,10 +1596,14 @@ const LISTADOS = {
         titulo: 'Noticias',
         descripcion: 'Crea, edita y administra las publicaciones de Nexo Sistémico.',
         accionNuevo: '+ Nueva noticia',
+        singular: 'noticia',
         placeholderBusqueda: 'Buscar por título...',
         tabla: 'noticias',
-        campos: 'id, titulo, slug, categoria, estado, fecha_publicacion, created_at',
+        campos: 'id, titulo, slug, categoria, estado, fecha_publicacion, imagen_url, created_at',
         edicionRapida: true,
+        historia: true,
+        puedeEliminar: true,
+        tituloFila: (fila) => fila.titulo || 'Sin título',
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_NOTICIAS,
         columnas: [
@@ -1164,10 +1632,14 @@ const LISTADOS = {
         titulo: 'Eventos',
         descripcion: 'Administra las actividades y fechas de la agenda académica.',
         accionNuevo: '+ Nuevo evento',
+        singular: 'evento',
         placeholderBusqueda: 'Buscar por título o lugar...',
         tabla: 'eventos',
-        campos: 'id, titulo, slug, resumen, lugar, fecha_inicio, fecha_fin, estado, url_inscripcion, created_at',
+        campos: 'id, titulo, slug, resumen, lugar, fecha_inicio, fecha_fin, estado, url_inscripcion, imagen_url, created_at',
         edicionRapida: true,
+        historia: true,
+        puedeEliminar: true,
+        tituloFila: (fila) => fila.titulo || 'Sin título',
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_MASCULINO,
         columnas: [
@@ -1200,10 +1672,13 @@ const LISTADOS = {
         titulo: 'Anuncios',
         descripcion: 'Publica avisos en el tablón de la comunidad.',
         accionNuevo: '+ Nuevo anuncio',
+        singular: 'anuncio',
         placeholderBusqueda: 'Buscar por título o texto...',
         tabla: 'anuncios',
-        campos: 'id, titulo, tipo, texto, modo, fecha_inicio, fecha_fin, estado, destino_tipo, created_at',
+        campos: 'id, titulo, tipo, texto, modo, fecha_inicio, fecha_fin, estado, destino_tipo, imagen_url, created_at',
         edicionRapida: true,
+        puedeEliminar: true,
+        tituloFila: (fila) => fila.titulo || 'Sin título',
         claveFiltro: (fila) => fila.estado,
         filtros: FILTROS_MASCULINO,
         columnas: [
@@ -1245,9 +1720,11 @@ const LISTADOS = {
         titulo: 'Administración',
         descripcion: 'Perfiles con acceso al panel de administración.',
         accionNuevo: '+ Nuevo perfil',
+        singular: 'perfil',
         placeholderBusqueda: 'Buscar por nombre...',
         tabla: 'perfiles_admin',
         campos: 'id, nombre, rol, estado, es_maestro, created_at',
+        tituloFila: (fila) => fila.nombre || 'Sin nombre',
         claveFiltro: (fila) => fila.estado,
         filtros: [
             { clave: 'TODOS', etiqueta: 'Todos' },
@@ -1598,7 +2075,8 @@ async function vistaNoticia(id) {
                     type="submit"
                     class="editor-save-button"
                 >${editando ? 'Guardar cambios' : 'Guardar noticia'}</button>
-            </div>`
+            </div>
+            ${tarjetaEliminarPublicacion(editando, 'noticias')}`
     });
 
     const mensajes = crearMensajes(el);
@@ -1845,7 +2323,8 @@ async function vistaEvento(id) {
                     type="submit"
                     class="editor-save-button"
                 >${editando ? 'Guardar cambios' : 'Guardar evento'}</button>
-            </div>`
+            </div>
+            ${tarjetaEliminarPublicacion(editando, 'eventos')}`
     });
 
     const mensajes = crearMensajes(el);
@@ -2119,7 +2598,8 @@ async function vistaAnuncio(id) {
                     type="submit"
                     class="editor-save-button"
                 >${editando ? 'Guardar cambios' : 'Guardar anuncio'}</button>
-            </div>`
+            </div>
+            ${tarjetaEliminarPublicacion(editando, 'anuncios')}`
     });
 
     const mensajes = crearMensajes(el);
@@ -2330,29 +2810,43 @@ async function vistaPerfil(id) {
                         placeholder="Nombre completo"
                     >
                     <small class="form-help">
-                        El usuario debe existir en Supabase Auth
-                        (Authentication → Users) para poder iniciar sesión.
+                        Aparece como autor de lo que publique en el panel.
                     </small>
                 </div>
 
                 ${editando ? '' : `
                 <div class="form-group">
-                    <label for="uid-auth">UID en Authentication *</label>
+                    <label for="correo-auth">Correo electrónico *</label>
                     <input
-                        id="uid-auth"
-                        name="uid"
-                        type="text"
+                        id="correo-auth"
+                        name="email"
+                        type="email"
+                        maxlength="200"
                         required
-                        maxlength="36"
-                        placeholder="00000000-0000-0000-0000-000000000000"
-                        pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                        autocomplete="off"
+                        placeholder="nombre@ejemplo.com"
                     >
                     <small class="form-help">
-                        En <strong>Authentication → Users</strong>, haz clic en el
-                        usuario y copia el <strong>UID</strong>. Así el perfil queda
-                        unido a esa cuenta. (Si el usuario se creó después de
-                        aplicar <code>sql/06</code>, el perfil ya existe: edítalo en
-                        lugar de crearlo.)
+                        Será el usuario con el que entre al panel.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="clave-auth">Contraseña *</label>
+                    <input
+                        id="clave-auth"
+                        name="password"
+                        type="password"
+                        minlength="8"
+                        maxlength="128"
+                        required
+                        autocomplete="new-password"
+                        placeholder="Mínimo 8 caracteres"
+                    >
+                    <small class="form-help">
+                        Mínimo 8 caracteres. Pásasela a esa persona: el panel
+                        crea la cuenta de Authentication en este mismo paso,
+                        sin copiar UIDs ni abrir Supabase.
                     </small>
                 </div>
                 `}
@@ -2412,7 +2906,25 @@ async function vistaPerfil(id) {
                     type="submit"
                     class="editor-save-button"
                 >${editando ? 'Guardar cambios' : 'Guardar perfil'}</button>
-            </div>`
+            </div>
+
+            ${editando && miNivel === NIVEL_ACCESO.MAESTRO && id !== yo.id ? `
+            <div class="editor-card editor-card-peligro">
+                <h3>Zona de peligro</h3>
+
+                <p class="form-help">
+                    Borra el perfil y la cuenta de Authentication asociada
+                    (correo y contraseña dejan de servir). No se puede deshacer.
+                </p>
+
+                <button
+                    id="delete-button"
+                    type="button"
+                    class="delete-button"
+                >Eliminar esta cuenta</button>
+            </div>
+            ` : ''
+            }`
     });
 
     const mensajes = crearMensajes(el);
@@ -2442,6 +2954,47 @@ async function vistaPerfil(id) {
         }
 
         rellenarPerfil(el, perfilOriginal);
+    }
+
+    // Borrado de la cuenta: solo la cuenta principal y nunca la propia
+    // (la tarjeta solo se pinta en ese caso).
+    const botonEliminar = $('#delete-button', el);
+
+    if (botonEliminar && perfilOriginal) {
+        botonEliminar.addEventListener('click', async () => {
+
+            const seguro = await confirmarAccion({
+                titulo: 'Eliminar cuenta',
+                mensaje: `Vas a borrar la cuenta de <strong>«${esc(perfilOriginal.nombre)}»</strong>: su perfil del panel y su usuario de Authentication (correo y contraseña). Esta acción no se puede deshacer.`,
+                confirmar: 'Eliminar cuenta'
+            });
+
+            if (!seguro) return;
+
+            const textoOriginal = botonEliminar.textContent;
+            botonEliminar.disabled = true;
+            botonEliminar.textContent = 'Eliminando...';
+
+            try {
+                const { error } = await supabase.rpc('eliminar_usuario_admin', {
+                    p_id: perfilOriginal.id
+                });
+
+                if (error) throw error;
+
+                dejarAviso(`La cuenta de «${perfilOriginal.nombre}» se eliminó.`, 'success');
+                irA('#/administradores');
+            } catch (error) {
+                console.error('Borrado de cuenta:', error);
+
+                botonEliminar.disabled = false;
+                botonEliminar.textContent = textoOriginal;
+
+                mensajes.mostrar(faltaLaFuncion(error, 'eliminar_usuario_admin')
+                    ? 'Falta aplicar el archivo sql/07_crear_usuario_admin.sql en Supabase → SQL Editor.'
+                    : mensajeSupabase(error, 'No se pudo eliminar la cuenta.'), 'error');
+            }
+        });
     }
 
     /**
@@ -2533,16 +3086,23 @@ async function vistaPerfil(id) {
 
         const datos = { nombre, rol, estado, es_maestro: esMaestro };
 
-        // Al crear, el perfil se unta a la cuenta de Authentication mediante su UID.
-        if (!editando) {
-            const uid = ($('#uid-auth', el)?.value ?? '').trim().toLowerCase();
+        // Al crear, la cuenta de Authentication nace en el mismo paso.
+        let correo = '';
+        let clave = '';
 
-            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(uid)) {
-                mensajes.mostrar('El UID no tiene un formato de UUID válido.', 'error');
+        if (!editando) {
+            correo = ($('#correo-auth', el)?.value ?? '').trim();
+            clave = $('#clave-auth', el)?.value ?? '';
+
+            if (!correo) {
+                mensajes.mostrar('Escribe el correo con el que entrará al panel.', 'error');
                 return;
             }
 
-            datos.id = uid;
+            if (clave.length < 8) {
+                mensajes.mostrar('La contraseña debe tener al menos 8 caracteres.', 'error');
+                return;
+            }
         }
 
         const motivo = await validarSeguro(datos);
@@ -2571,21 +3131,27 @@ async function vistaPerfil(id) {
 
                 mensajes.mostrar('Cambios guardados correctamente.', 'success');
             } else {
-                const { error } = await supabase
-                    .from('perfiles_admin')
-                    .insert(datos)
-                    .select('id')
-                    .single();
+                // RPC de sql/07: crea el usuario de Authentication y su fila
+                // en perfiles_admin en una sola llamada.
+                const { data: nuevoId, error } = await supabase.rpc('crear_usuario_admin', {
+                    p_email: correo,
+                    p_password: clave,
+                    p_nombre: nombre,
+                    p_rol: rol,
+                    p_es_maestro: esMaestro,
+                    p_estado: estado
+                });
 
                 if (error) throw error;
 
-                mensajes.mostrar('Perfil creado y vinculado al usuario de Authentication. Ya puede iniciar sesión.', 'success');
+                dejarAviso('Cuenta creada: ya puede entrar al panel con ese correo y esa contraseña.', 'success');
+                irA(`#/administradores/editar/${nuevoId}`);
             }
         } catch (error) {
             console.error(error);
 
-            if (error.code === '23503') {
-                mensajes.mostrar('No se puede crear el perfil: el UID no corresponde a ningún usuario de Supabase Auth (Authentication → Users).', 'error');
+            if (faltaLaFuncion(error, 'crear_usuario_admin')) {
+                mensajes.mostrar('Falta aplicar el archivo sql/07_crear_usuario_admin.sql en Supabase → SQL Editor. Después vuelve a intentarlo.', 'error');
             } else if (error.code === '23505') {
                 mensajes.mostrar('Ese usuario ya tiene un perfil. Cierra y vuelve a abrir la sección para editarlo y activarlo.', 'error');
             } else {
@@ -2674,6 +3240,14 @@ function hashCanonico(ruta) {
     if (ruta.seccion === 'login' || !meta) return '#/dashboard';
     const nivelUsuario = store.admin.perfil ? nivelDe(store.admin.perfil) : 0;
     if (meta.nivelMinimo && nivelUsuario < meta.nivelMinimo) return '#/dashboard';
+
+    // La historia solo existe en las secciones que la tienen (Noticias y
+    // Eventos); en el resto se vuelve al listado.
+    if (ruta.accion === 'historia') {
+        if (!HISTORIA[ruta.seccion]) return `#/${ruta.seccion}`;
+        return null;
+    }
+
     if (ruta.accion && ruta.accion !== 'nuevo' && ruta.accion !== 'editar') return `#/${ruta.seccion}`;
     if (ruta.accion === 'editar' && !ruta.id) return `#/${ruta.seccion}`;
 
@@ -2703,11 +3277,13 @@ async function enrutar() {
     }
 
     mostrarAplicacion();
+    cerrarMenuMovil();
 
     const meta = SECCIONES[ruta.seccion];
     const encabezado = ruta.accion === 'nuevo' ? meta.nuevo
         : ruta.accion === 'editar' ? meta.editar
-            : meta.titulo;
+            : ruta.accion === 'historia' ? (meta.historia ?? meta.titulo)
+                : meta.titulo;
 
     $('#header-title').textContent = encabezado ?? meta.titulo;
     $('#header-subtitle').textContent = meta.subtitulo;
@@ -2718,6 +3294,7 @@ async function enrutar() {
 
     const construir = () => {
         if (ruta.seccion === 'dashboard') return vistaDashboard();
+        if (ruta.accion === 'historia') return vistaHistoria(ruta.seccion);
         if (ruta.accion === 'nuevo') return EDITORES[ruta.seccion](null);
         if (ruta.accion === 'editar') return EDITORES[ruta.seccion](ruta.id);
         return LISTADOS[ruta.seccion]();
@@ -2794,6 +3371,8 @@ function conectarAcceso() {
 async function iniciar() {
 
     conectarAcceso();
+    conectarBorradoPublicaciones();
+    conectarMenuMovil();
 
     window.addEventListener('hashchange', () => { enrutar(); });
 
