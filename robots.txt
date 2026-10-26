@@ -1,0 +1,18 @@
+# Nexo Sistémico UDH — robots.txt
+# https://nexo-sistemico.vercel.app/robots.txt
+
+User-agent: *
+Allow: /
+
+# Panel administrativo: no indexar (además lleva X-Robots-Tag: noindex)
+Disallow: /admin
+
+# Infraestructura: scripts y documentación de desarrollo (ya redirigen a /)
+Disallow: /sql
+Disallow: /README.txt
+
+# Fragmentos y respaldos: no son páginas para posicionar
+Disallow: /components/
+Disallow: /data/
+
+Sitemap: https://nexo-sistemico.vercel.app/sitemap.xml

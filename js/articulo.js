@@ -10,6 +10,7 @@ import { obtenerNoticiaArchivada } from './data/historial.js';
 import { escapar } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
+import { actualizarMetadatos } from './utils/seo.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarArticulo();
@@ -51,7 +52,11 @@ async function cargarArticulo() {
 
         if (noticia.historico) {
             renderCompacta(contenedor, noticia);
-            document.title = `${noticia.titulo} | Nexo Sistémico`;
+            actualizarMetadatos({
+                titulo: noticia.titulo,
+                resumen: noticia.resumen || noticia.contenido,
+                tipo: 'article'
+            });
             return;
         }
 
@@ -64,7 +69,12 @@ async function cargarArticulo() {
 
         document.getElementById('cuerpo-texto').innerHTML = cuerpo;
 
-        document.title = `${noticia.titulo} | Nexo Sistémico`;
+        actualizarMetadatos({
+            titulo: noticia.titulo,
+            resumen: noticia.resumen || noticia.contenido,
+            imagen: noticia.imagenUrl,
+            tipo: 'article'
+        });
 
     } catch (error) {
 

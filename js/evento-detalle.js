@@ -8,6 +8,7 @@ import { obtenerEventoArchivado } from './data/historial.js';
 import { escapar } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
+import { actualizarMetadatos } from './utils/seo.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarDetalleEvento();
@@ -46,7 +47,12 @@ async function cargarDetalleEvento() {
             return;
         }
 
-        document.title = `${evento.titulo} | Nexo Sistémico`;
+        actualizarMetadatos({
+            titulo: evento.titulo,
+            resumen: evento.resumen || evento.contenido,
+            imagen: evento.imagenUrl,
+            tipo: 'website'
+        });
 
         if (evento.historico) {
             renderCompacto(contenedor, evento);

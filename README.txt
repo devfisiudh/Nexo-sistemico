@@ -90,7 +90,8 @@ Claves del diseño:
 │   │   └── historial.js        RPC de histórico (sql/08) — archivados y vencidos
 │   ├── utils/
 │   │   ├── formato.js          fechas, colores por categoría, escapado
-│   │   └── sanitizar.js        allowlist de HTML + prepararContenido()
+│   │   ├── sanitizar.js        allowlist de HTML + prepararContenido()
+│   │   └── seo.js              metadatos dinámicos (título, canónica, OG)
 │   └── <vista>.js              una vista por página (noticias, articulo, ...)
 │
 ├── pages                       HTML de las secciones internas
@@ -99,7 +100,9 @@ Claves del diseño:
 ├── sql/                        Scripts de base de datos (ver sección 6)
 │
 ├── index.html
-├── vercel.json                 despliegue y cabeceras de seguridad
+├── vercel.json                 despliegue, rutas ocultas y cabeceras
+├── robots.txt                  qué puede rastrear cada buscador
+├── sitemap.xml                 mapa del sitio (páginas posicionables)
 └── README.txt
 
 --------------------------------------------------------------------------------
@@ -287,6 +290,21 @@ VIGILANCIA CONTRA CAÍDAS
   Los tres DAO intentan Supabase con un tiempo límite de 5 s y, si falla,
   recurren a los JSON de data/. Es una red de seguridad, no un plan: si vas a
   borrar esos archivos, quita también cargarLegado() en cada DAO.
+
+SEO Y COMPARTIR EN REDES
+  Cada página lleva en <head> su descripción, su URL canónica y el bloque
+  Open Graph (og:*) con la imagen assets/img/compartir.png (1200×630, la
+  única que se genera: el favicon y el logo eran el mismo archivo de 487 KB).
+  Los rastreadores que NO ejecutan JavaScript (Facebook, X, WhatsApp) leen
+  esos metadatos tal cual; los que sí lo ejecutan reciben además lo que
+  actualiza js/utils/seo.js al cargar una noticia o un evento (título,
+  resumen, canónica y portada reales).
+  Límite conocido: como el detalle se pinta en el cliente, compartir un
+  artículo en Facebook mostrará los metadatos genéricos de la plantilla.
+  Para que cada noticia lleve su propia tarjeta haría falta generarla en el
+  servidor (Vercel Function) o renderizar las páginas antes del despliegue.
+  robots.txt deja fuera /admin, /sql, /components/ y /data/; el histórico
+  es noindex en su propia plantilla y por eso no aparece en sitemap.xml.
 
 RUTAS OCULTAS EN PRODUCCIÓN
   /sql/*, /README.txt, /.github/* y /.vscode/* son scripts y documentación de
