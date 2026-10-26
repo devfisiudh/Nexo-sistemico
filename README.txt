@@ -75,7 +75,7 @@ Claves del diseño:
 │       ├── admin.css           estilos base del panel (+ editor enriquecido)
 │       └── spa.css             transiciones entre vistas
 │
-├── assets                      img · icons · docs (PDF de descarga)
+├── assets                      img · icons (docs/ aparece si subes un PDF)
 ├── components/Layout           navbar.html y footer.html (cargados por fetch)
 ├── css                         global · layout · y una hoja por sección
 │
@@ -287,6 +287,17 @@ VIGILANCIA CONTRA CAÍDAS
   Los tres DAO intentan Supabase con un tiempo límite de 5 s y, si falla,
   recurren a los JSON de data/. Es una red de seguridad, no un plan: si vas a
   borrar esos archivos, quita también cargarLegado() en cada DAO.
+
+RUTAS OCULTAS EN PRODUCCIÓN
+  /sql/*, /README.txt, /.github/* y /.vscode/* son scripts y documentación de
+  desarrollo, no contenido del portal. Vercel sirve como archivo estático todo
+  lo que esté en el repo, así que vercel.json los redirige a / (307) con
+  `redirects`, que se evalúan ANTES de leer el disco. Si alguna de esas rutas
+  volviera a responder 200, el siguiente escalón es excluirlas del build
+  (buildCommand + outputDirectory). Comprobación tras cada despliegue:
+      curl -I https://nexo-sistemico.vercel.app/sql/07_crear_usuario_admin.sql
+  `.freebuff/` (identificador de una herramienta interna) está en .gitignore
+  y por eso no viaja al repo.
 
 DESARROLLO LOCAL
   python -m http.server 5501   (configurado en .vscode/settings.json)

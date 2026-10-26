@@ -10,6 +10,9 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
+# Identificador interno de herramientas (no forma parte del portal)
+.freebuff/
+
 # Entorno
 .env
 .env.local

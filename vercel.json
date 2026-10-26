@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/sql/:path*", "destination": "/", "permanent": false },
+    { "source": "/README.txt", "destination": "/", "permanent": false },
+    { "source": "/.github/:path*", "destination": "/", "permanent": false },
+    { "source": "/.vscode/:path*", "destination": "/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/noticias", "destination": "/pages/noticias" },
     { "source": "/eventos", "destination": "/pages/eventos" },
