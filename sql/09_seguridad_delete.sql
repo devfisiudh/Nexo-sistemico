@@ -164,10 +164,15 @@ WHERE schemaname = 'public'
   AND 'anon' = ANY (roles);
 
 -- =============================================================================
--- 3) Las políticas del bucket de imágenes (portal-publico), por información:
---    el panel sube y borra portadas desde el cliente.
+-- 3) Las políticas de storage sobre objetos (portal-publico), por información:
+--    el panel sube y borra portadas desde el cliente. En Postgres no existe
+--    storage.policies: las políticas de cualquier esquema se leen en
+--    pg_policies; las de storage viven sobre storage.objects y se filtran
+--    porque su qual/with_check menciona el bucket.
 -- =============================================================================
-SELECT bucket_id, name, policyname, cmd, roles
-FROM storage.policies
-WHERE bucket_id = 'portal-publico'
-ORDER BY name;
+SELECT schemaname, tablename, policyname, cmd, roles, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'storage'
+  AND tablename = 'objects'
+  AND (qual LIKE '%portal-publico%' OR with_check LIKE '%portal-publico%')
+ORDER BY policyname;
