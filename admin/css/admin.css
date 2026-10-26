@@ -1651,6 +1651,42 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* SACAR DEL ARCHIVO (Historia y Archivo) — misma corrección de ancho que
+   el botón de eliminar: el `button { width: 100% }` global no debe
+   estirarlo. Verde de «Publicado» para distinguirlo de Editar/Eliminar. */
+.table-action-link.table-action-restaurar {
+    width: auto;
+
+    margin: 0 14px 0 0;
+    padding: 0;
+
+    border: 0;
+
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    color: #287a3f;
+
+    cursor: pointer;
+}
+
+.table-action-link.table-action-restaurar:hover {
+    text-decoration: underline;
+}
+
+.table-action-link.table-action-restaurar:focus-visible {
+    outline: 2px solid #287a3f;
+    outline-offset: 2px;
+}
+
+.table-action-link.table-action-restaurar:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
 .editor-card-peligro {
     border: 1px solid #ecc6c6;
 }

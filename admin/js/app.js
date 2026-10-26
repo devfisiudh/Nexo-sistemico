@@ -1025,6 +1025,7 @@ async function cargarUltimasNoticias(raiz) {
     const { data, error } = await supabase
         .from('noticias')
         .select('id, titulo, estado, fecha_publicacion, created_at')
+        .neq('estado', 'ARCHIVADO')   // lo archivado solo se ve en Historia/Archivo
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -1159,6 +1160,10 @@ async function vistaListado(config) {
         const termino = buscador.value.trim().toLowerCase();
 
         const filas = datos.filter((fila) => {
+            // Lo archivado solo aparece en «Historia» (y en «Archivo»):
+            // ni en «Todos» ni por búsqueda se cuela aquí.
+            if (fila.estado === 'ARCHIVADO') return false;
+
             const coincideFiltro = filtro === 'TODOS' || config.claveFiltro(fila) === filtro;
             const coincideTexto = !termino || Object.values(fila).some(
                 (valor) => valor != null && String(valor).toLowerCase().includes(termino)
@@ -1239,7 +1244,15 @@ async function vistaListado(config) {
         }
 
         fila.estado = nuevo;
-        mostrarMensaje(`Estado cambiado a «${formatearEstado(nuevo)}».`, 'success');
+
+        const nombreFila = config.tituloFila ? config.tituloFila(fila) : String(fila.id);
+
+        mostrarMensaje(
+            nuevo === 'ARCHIVADO'
+                ? `«${nombreFila}» se archivó: desde ahora solo aparece en la Historia de ${esc(config.seccion)} y en Archivo.`
+                : `Estado cambiado a «${formatearEstado(nuevo)}».`,
+            'success'
+        );
         render();
     });
 
@@ -1319,20 +1332,20 @@ async function vistaListado(config) {
 }
 
 
+// Sin filtro de «Archivadas/Archivados»: lo archivado no se lista aquí.
+// Vive en la Historia de su sección y en el Archivo global.
 const FILTROS_NOTICIAS = [
     { clave: 'TODOS', etiqueta: 'Todas' },
     { clave: 'PUBLICADO', etiqueta: 'Publicadas' },
     { clave: 'PROGRAMADO', etiqueta: 'Programadas' },
-    { clave: 'BORRADOR', etiqueta: 'Borradores' },
-    { clave: 'ARCHIVADO', etiqueta: 'Archivadas' }
+    { clave: 'BORRADOR', etiqueta: 'Borradores' }
 ];
 
 const FILTROS_MASCULINO = [
     { clave: 'TODOS', etiqueta: 'Todos' },
     { clave: 'PUBLICADO', etiqueta: 'Publicados' },
     { clave: 'PROGRAMADO', etiqueta: 'Programados' },
-    { clave: 'BORRADOR', etiqueta: 'Borradores' },
-    { clave: 'ARCHIVADO', etiqueta: 'Archivados' }
+    { clave: 'BORRADOR', etiqueta: 'Borradores' }
 ];
 
 const DESTINOS = {
@@ -1359,7 +1372,7 @@ async function vistaArchivo() {
             <div>
                 <span class="section-label">HISTORIAL</span>
                 <h2>Archivo</h2>
-                <p>Publicaciones que han sido archivadas y ya no aparecen en el portal.</p>
+                <p>Publicaciones archivadas: ya no aparecen en el portal. Con «Sacar del archivo» vuelven a su sección en estado Publicada.</p>
             </div>
         </section>
 
@@ -1374,6 +1387,7 @@ async function vistaArchivo() {
                             <th>Título</th>
                             <th>Fecha</th>
                             <th>Estado original</th>
+                            <th class="table-actions-heading">Acciones</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -1390,46 +1404,13 @@ async function vistaArchivo() {
         mensajeEl.hidden = false;
     };
 
-    tbody.innerHTML = `<tr><td colspan="4" class="table-message">Cargando historial...</td></tr>`;
+    let filas = [];
 
-    try {
-        const [noticiasRes, eventosRes, anunciosRes] = await Promise.all([
-            supabase.from('noticias').select('id, titulo, estado, fecha_publicacion, created_at').eq('estado', 'ARCHIVADO'),
-            supabase.from('eventos').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO'),
-            supabase.from('anuncios').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO')
-        ]);
-
-        const filas = [];
-
-        (noticiasRes.data ?? []).forEach((n) => filas.push({
-            id: n.id,
-            tipo: 'Noticia',
-            titulo: n.titulo,
-            fecha: n.fecha_publicacion || n.created_at,
-            estado: n.estado
-        }));
-
-        (eventosRes.data ?? []).forEach((e) => filas.push({
-            id: e.id,
-            tipo: 'Evento',
-            titulo: e.titulo,
-            fecha: e.fecha_inicio || e.created_at,
-            estado: e.estado
-        }));
-
-        (anunciosRes.data ?? []).forEach((a) => filas.push({
-            id: a.id,
-            tipo: 'Anuncio',
-            titulo: a.titulo,
-            fecha: a.fecha_inicio || a.created_at,
-            estado: a.estado
-        }));
-
-        filas.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    function render() {
 
         if (!filas.length) {
-            tbody.innerHTML = `<tr><td colspan="4" class="table-message">No hay publicaciones archivadas.</td></tr>`;
-            return el;
+            tbody.innerHTML = `<tr><td colspan="5" class="table-message">No hay publicaciones archivadas.</td></tr>`;
+            return;
         }
 
         const fragmento = document.createDocumentFragment();
@@ -1441,15 +1422,100 @@ async function vistaArchivo() {
                 <td class="table-cell-strong">${esc(fila.titulo)}</td>
                 <td>${esc(formatearFecha(fila.fecha))}</td>
                 <td><span class="status-badge status-archivado">${esc(formatearEstado(fila.estado))}</span></td>
+                <td class="table-actions">
+                    <button type="button" class="table-action-link table-action-restaurar" data-restaurar="${esc(fila.id)}" data-tabla="${esc(fila.tabla)}">Sacar del archivo</button>
+                </td>
             `;
             fragmento.appendChild(tr);
         });
 
         tbody.innerHTML = '';
         tbody.appendChild(fragmento);
+    }
+
+    // «Sacar del archivo»: devuelve la publicación al estado Publicada.
+    tbody.addEventListener('click', async (evento) => {
+
+        const boton = evento.target.closest?.('[data-restaurar]');
+        if (!boton || boton.disabled) return;
+
+        const fila = filas.find((f) => String(f.id) === String(boton.dataset.restaurar));
+        if (!fila) return;
+
+        const nombre = fila.titulo || 'Sin título';
+
+        const seguro = await confirmarAccion({
+            titulo: 'Sacar del archivo',
+            mensaje: `Vas a devolver <strong>«${esc(nombre)}»</strong> (${esc(fila.tipo)}) al estado <strong>Publicada</strong>: dejará de estar en el Archivo y volverá a mostrarse en su sección y en el portal.`,
+            confirmar: 'Sacar del archivo'
+        });
+
+        if (!seguro) return;
+
+        boton.disabled = true;
+
+        const { error } = await supabase
+            .from(fila.tabla)
+            .update({ estado: 'PUBLICADO' })
+            .eq('id', fila.id);
+
+        if (error) {
+            console.error('Sacar del archivo:', error);
+            boton.disabled = false;
+            mostrarMensaje(mensajeSupabase(error, 'No se pudo cambiar el estado.'), 'error');
+            return;
+        }
+
+        filas = filas.filter((f) => String(f.id) !== String(fila.id));
+        mostrarMensaje(`«${nombre}» volvió al estado Publicada: ya vuelve a aparecer en su sección y en el portal.`, 'success');
+        render();
+    });
+
+    tbody.innerHTML = `<tr><td colspan="5" class="table-message">Cargando historial...</td></tr>`;
+
+    try {
+        const [noticiasRes, eventosRes, anunciosRes] = await Promise.all([
+            supabase.from('noticias').select('id, titulo, estado, fecha_publicacion, created_at').eq('estado', 'ARCHIVADO'),
+            supabase.from('eventos').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO'),
+            supabase.from('anuncios').select('id, titulo, estado, fecha_inicio, created_at').eq('estado', 'ARCHIVADO')
+        ]);
+
+        const encontradas = [];
+
+        (noticiasRes.data ?? []).forEach((n) => encontradas.push({
+            id: n.id,
+            tabla: 'noticias',
+            tipo: 'Noticia',
+            titulo: n.titulo,
+            fecha: n.fecha_publicacion || n.created_at,
+            estado: n.estado
+        }));
+
+        (eventosRes.data ?? []).forEach((e) => encontradas.push({
+            id: e.id,
+            tabla: 'eventos',
+            tipo: 'Evento',
+            titulo: e.titulo,
+            fecha: e.fecha_inicio || e.created_at,
+            estado: e.estado
+        }));
+
+        (anunciosRes.data ?? []).forEach((a) => encontradas.push({
+            id: a.id,
+            tabla: 'anuncios',
+            tipo: 'Anuncio',
+            titulo: a.titulo,
+            fecha: a.fecha_inicio || a.created_at,
+            estado: a.estado
+        }));
+
+        encontradas.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+        filas = encontradas;
+        render();
     } catch (error) {
         console.error(error);
-        tbody.innerHTML = `<tr><td colspan="4" class="table-message">No se pudo cargar el historial.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="table-message">No se pudo cargar el historial.</td></tr>`;
         mostrarMensaje(mensajeSupabase(error, 'No se pudo cargar el archivo.'), 'error');
     }
 
@@ -1475,7 +1541,7 @@ const HISTORIA = {
         campos: 'id, titulo, slug, estado, fecha_publicacion, created_at',
         enHistoria: (fila) => fila.estado === 'ARCHIVADO',
         celdaFecha: (fila) => `<td>${esc(formatearFecha(fila.fecha_publicacion))}</td>`,
-        nota: 'Aquí aparecen las noticias archivadas. Para recuperar una, ábrela y vuelve a ponerla en estado Publicada.'
+        nota: 'Aquí aparecen las noticias archivadas. Pulsa «Sacar del archivo» para devolver una a la sección (o ábrela para cambiarle el estado a mano).'
     },
 
     eventos: {
@@ -1489,7 +1555,7 @@ const HISTORIA = {
                 fechaFin: fila.fecha_fin
             }).clave === 'VENCIDO',
         celdaFecha: (fila) => `<td>${esc(formatearRango(fila.fecha_inicio, fila.fecha_fin))}</td>`,
-        nota: 'Aquí aparecen los eventos archivados y los vencidos (pasada su fecha de fin). Ábrelos para editarlos o volver a publicarlos.'
+        nota: 'Aquí aparecen los eventos archivados y los vencidos (pasada su fecha de fin). «Sacar del archivo» devuelve un archivado a Publicada; para un vencido, ábrelo y amplía sus fechas.'
     }
 };
 
@@ -1521,6 +1587,8 @@ async function vistaHistoria(seccion) {
             </div>
         </section>
 
+        <div id="historia-mensaje" class="editor-message" role="status" hidden></div>
+
         <section class="admin-table-card">
             <div class="admin-table-wrapper">
                 <table class="admin-table">
@@ -1538,28 +1606,33 @@ async function vistaHistoria(seccion) {
         </section>`;
 
     const tbody = el.querySelector('tbody');
+    const mensajeEl = $('#historia-mensaje', el);
 
-    tbody.innerHTML = `<tr><td colspan="4" class="table-message">Cargando...</td></tr>`;
+    const mostrarMensaje = (texto, tipo) => {
+        mensajeEl.textContent = texto;
+        mensajeEl.className = `editor-message editor-message-${tipo}`;
+        mensajeEl.hidden = false;
+    };
 
-    try {
-        const { data, error } = await supabase
-            .from(config.tabla)
-            .select(config.campos)
-            .order('created_at', { ascending: false });
+    let filas = [];
 
-        if (error) throw error;
-
-        const filas = (data ?? []).filter(config.enHistoria);
+    function render() {
 
         if (!filas.length) {
             tbody.innerHTML = `<tr><td colspan="4" class="table-message">Todavía no hay nada en la historia de ${esc(config.plural)}.</td></tr>`;
-            return el;
+            return;
         }
 
         const fragmento = document.createDocumentFragment();
 
         filas.forEach((fila) => {
             const tr = document.createElement('tr');
+
+            // Solo un archivado puede «salir» de aquí; un vencido ya está
+            // en Publicado y lo que necesita son fechas nuevas (Editar).
+            const botonRestaurar = fila.estado === 'ARCHIVADO'
+                ? `<button type="button" class="table-action-link table-action-restaurar" data-restaurar="${esc(fila.id)}">Sacar del archivo</button>`
+                : '';
 
             tr.innerHTML = `
                 <td>
@@ -1571,6 +1644,7 @@ async function vistaHistoria(seccion) {
                 ${config.celdaFecha(fila)}
                 <td>${insigniaVisibilidad(fila)}</td>
                 <td class="table-actions">
+                    ${botonRestaurar}
                     <a class="table-action-link" href="#/${seccion}/editar/${esc(fila.id)}">Editar</a>
                 </td>`;
 
@@ -1579,6 +1653,67 @@ async function vistaHistoria(seccion) {
 
         tbody.innerHTML = '';
         tbody.appendChild(fragmento);
+    }
+
+    // «Sacar del archivo»: devuelve la publicación al estado Publicada.
+    tbody.addEventListener('click', async (evento) => {
+
+        const boton = evento.target.closest?.('[data-restaurar]');
+        if (!boton || boton.disabled) return;
+
+        const fila = filas.find((f) => String(f.id) === String(boton.dataset.restaurar));
+        if (!fila) return;
+
+        const nombre = fila.titulo || 'Sin título';
+
+        const seguro = await confirmarAccion({
+            titulo: 'Sacar del archivo',
+            mensaje: `Vas a devolver <strong>«${esc(nombre)}»</strong> al estado <strong>Publicada</strong>: dejará de estar en la historia y volverá a aparecer en ${esc(config.plural)} y en el portal.`,
+            confirmar: 'Sacar del archivo'
+        });
+
+        if (!seguro) return;
+
+        boton.disabled = true;
+
+        const { error } = await supabase
+            .from(config.tabla)
+            .update({ estado: 'PUBLICADO' })
+            .eq('id', fila.id);
+
+        if (error) {
+            console.error('Sacar del archivo:', error);
+            boton.disabled = false;
+            mostrarMensaje(mensajeSupabase(error, 'No se pudo cambiar el estado.'), 'error');
+            return;
+        }
+
+        fila.estado = 'PUBLICADO';
+        const sigueAqui = config.enHistoria(fila);
+        filas = filas.filter(config.enHistoria);
+
+        mostrarMensaje(
+            sigueAqui
+                ? `«${nombre}» volvió al estado Publicada, pero sigue vencido: ábrelo para ampliar sus fechas.`
+                : `«${nombre}» volvió al estado Publicada: ya aparece en ${config.plural} y en el portal.`,
+            'success'
+        );
+
+        render();
+    });
+
+    tbody.innerHTML = `<tr><td colspan="4" class="table-message">Cargando...</td></tr>`;
+
+    try {
+        const { data, error } = await supabase
+            .from(config.tabla)
+            .select(config.campos)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        filas = (data ?? []).filter(config.enHistoria);
+        render();
     } catch (error) {
         console.error('Error cargando la historia:', error);
         tbody.innerHTML = `<tr><td colspan="4" class="table-message">No se pudo cargar la historia.</td></tr>`;
