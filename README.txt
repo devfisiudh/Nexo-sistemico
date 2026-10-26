@@ -264,6 +264,11 @@ se pueden volver a ejecutar sin romper nada.
                                 historial_noticias/eventos (listado) y
                                 historial_noticia/evento (detalle), solo
                                 archivados y vencidos, nunca borradores.
+  09_seguridad_delete.sql       Políticas de DELETE: en noticias, eventos y
+                                anuncios solo borra un administrador (los
+                                editores no borran ni lo suyo); en
+                                perfiles_admin, solo la cuenta maestra.
+                                Ver «BORRADO Y GUARDADO» en la sección 7.
 
 Cada archivo lleva en los comentarios por qué existe y qué pasaba antes.
 
@@ -279,12 +284,28 @@ AUTOR DE LOS ANUNCIOS — por qué hay dos columnas
   expusiera perfiles_admin— abriría la tabla a enumerar cuentas de
   administración.
 
-SANITIZADO DE CONTENIDO
+SANITIZADO DE CONTENIDO — al guardar y al mostrar
   El contenido de noticias, eventos y anuncios se guarda como HTML y se inyecta
   en la página. Pasa por js/utils/sanitizar.js, una allowlist que usa el
   parser del navegador (no expresiones regulares) y descarta <script>,
   <iframe>, <svg>, los atributos on* y las URL javascript:.
-  La cabecera Content-Security-Policy en vercel.json es la segunda barrera.
+  Se aplica en dos puntos: el panel lo sanea al guardar (admin/js/app.js,
+  conectarGuardado) y el portal lo sanea otra vez al mostrar (prepararContenido
+  en articulo.js, evento-detalle.js y comunidad.js). Doble capa: aunque un
+  contenido ya guardado fuera sucio, la vista lo limpia; y nada sucio llega a
+  la base desde el editor.
+  La cabecera Content-Security-Policy en vercel.json es la tercera barrera.
+
+BORRADO Y GUARDADO — quién puede qué (RLS)
+  El panel borra publicaciones con .delete() desde el navegador, con la clave
+  pública del cliente: sin política de DELETE, cualquier sesión autenticada
+  podría borrar filas desde la consola. El SQL 09 fija la regla:
+      noticias / eventos / anuncios  solo administrador (maestro incluido)
+      perfiles_admin                 solo la cuenta maestra
+  La interfaz ya exigía ese nivel (puedeBorrarContenido), pero la base no se
+  fía de la interfaz. Las políticas de SELECT/INSERT/UPDATE no se tocan.
+  El borrado de cuentas sigue yendo por eliminar_usuario_admin (SECURITY
+  DEFINER, sql/07): exige maestro y prohíbe borrarse a sí mismo.
 
 VIGILANCIA CONTRA CAÍDAS
   Los tres DAO intentan Supabase con un tiempo límite de 5 s y, si falla,

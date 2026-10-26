@@ -39,6 +39,11 @@ import {
 // para el contenido de noticias, eventos y anuncios.
 import { montarEditorRico, asignarValorEditorRico, textoPlano } from './editor-rico.js';
 
+// La misma allowlist que usa el portal al mostrar: el contenido se guarda
+// ya depurado, de modo que ni el panel ni el portal muestran HTML crudo
+// aunque alguien lo escriba a mano en el campo (js/utils/sanitizar.js).
+import { sanitizar } from '../../js/utils/sanitizar.js';
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    STORE — sesión del administrador (una sola verificación, caché de 5 min)
@@ -2077,6 +2082,14 @@ function conectarGuardado({ el, mensajes, editando, botonTextoCrear, construirDa
         if (validacion.error) {
             mensajes.mostrar(validacion.error, 'error');
             return;
+        }
+
+        // El contenido se guarda ya saneado (allowlist de etiquetas,
+        // atributos y esquemas). Así un <script> o un onerror pegado en el
+        // editor nunca llega a la base: el portal ya lo filtraba al mostrar,
+        // pero la capa en el origen evita que el panel lo muestre crudo.
+        if (typeof validacion.datos.contenido === 'string') {
+            validacion.datos.contenido = sanitizar(validacion.datos.contenido);
         }
 
         boton.disabled = true;
