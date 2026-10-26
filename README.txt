@@ -83,6 +83,8 @@ Claves del diseño:
 │   ├── main.js                 carga navbar y footer
 │   ├── historico.js            página del histórico público (dos pestañas)
 │   ├── config/supabase.js      cliente único de Supabase
+│   ├── vendor/
+│   │   └── supabase-js.js      supabase-js@2.117.3 alojado en el repo (sin CDN)
 │   ├── data/                   CAPA DE DATOS del portal
 │   │   ├── noticias.js
 │   │   ├── eventos.js
@@ -314,9 +316,11 @@ BORRADO Y GUARDADO — quién puede qué (RLS)
   DEFINER, sql/07): exige maestro y prohíbe borrarse a sí mismo.
 
 VIGILANCIA CONTRA CAÍDAS
-  Los tres DAO intentan Supabase con un tiempo límite de 5 s y, si falla,
-  recurren a los JSON de data/. Es una red de seguridad, no un plan: si vas a
-  borrar esos archivos, quita también cargarLegado() en cada DAO.
+  Los tres DAO limitan la espera a 5 s: si Supabase no responde a tiempo, el
+  error sube hasta la vista, que muestra su mensaje ("No pudimos cargar...").
+  Antes había un respaldo a los JSON de data/; se retiró con la migración
+  completa, porque ante un fallo es mejor ver el error que contenido antiguo
+  desactualizado.
 
 ACCESIBILIDAD (WCAG 2.1 nivel AA)
   Contraste: los colores de texto del portal salen de variables de
@@ -349,7 +353,7 @@ SEO Y COMPARTIR EN REDES
   artículo en Facebook mostrará los metadatos genéricos de la plantilla.
   Para que cada noticia lleve su propia tarjeta haría falta generarla en el
   servidor (Vercel Function) o renderizar las páginas antes del despliegue.
-  robots.txt deja fuera /admin, /sql, /components/ y /data/; el histórico
+  robots.txt deja fuera /admin, /sql, /README.txt y /components/; el histórico
   es noindex en su propia plantilla y por eso no aparece en sitemap.xml.
 
 RUTAS OCULTAS EN PRODUCCIÓN

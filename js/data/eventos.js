@@ -1,15 +1,14 @@
 // js/data/eventos.js — Capa de acceso a datos de Eventos.
 //
-// Reemplaza la lectura de data/eventos.json y el concepto `accion`
-// ("interno" | "externo") del JSON antiguo.
-//
 // DECISIÓN: `accion` se deriva de `url_inscripcion` en vez de agregar una
 // columna. Un evento o acepta inscripción por un formulario/enlace externo o
 // no la acepta; no hay un tercer caso que el diseño no sepa pintar. Así el
 // panel no tiene un campo más que llenar y no puede quedar inconsistente
 // (acción interna apuntando a una URL vacía, o al revés).
 //
-// Mismo patrón que js/data/noticias.js: Supabase con respaldo local y timeout.
+// Mismo patrón que js/data/noticias.js: una sola fuente (Supabase) y un
+// timeout que convierte una conexión colgada en un error visible en la vista.
+// El respaldo a data/eventos.json se retiró con la migración completa.
 
 import { supabase } from '../config/supabase.js';
 import {
@@ -37,8 +36,6 @@ const CAMPOS = `
 
 const CAMPOS_DETALLE = `${CAMPOS}`;
 
-const RUTA_LEGACY = '../data/eventos.json';
-
 // Estados que el portal acepta mostrar. RLS aplica además la ventana de
 // fechas (sql/04_estado_programado.sql): un PROGRAMADO sin fecha llegada no
 // vuelve por mucho que lo pidamos aquí.
@@ -56,34 +53,21 @@ const TIMEOUT_MS = 5000;
  */
 export async function listarEventos({ limite = 6 } = {}) {
 
-    try {
+    const { data, error } = await conTimeout(
+        supabase
+            .from('eventos')
+            .select(CAMPOS)
+            .in('estado', ESTADOS_VISIBLES)
+            .order('fecha_inicio', {
+                ascending: true,
+                nullsfirst: false
+            })
+            .limit(limite)
+    );
 
-        const { data, error } = await conTimeout(
-            supabase
-                .from('eventos')
-                .select(CAMPOS)
-                .in('estado', ESTADOS_VISIBLES)
-                .order('fecha_inicio', {
-                    ascending: true,
-                    nullsfirst: false
-                })
-                .limit(limite)
-        );
+    if (error) throw error;
 
-        if (error) throw error;
-
-        return (data ?? []).map(normalizar);
-
-    } catch (error) {
-
-        console.warn(
-            '[datos] Supabase no respondió para eventos; se usa el respaldo local.',
-            error
-        );
-
-        return await cargarLegado({ limite });
-
-    }
+    return (data ?? []).map(normalizar);
 
 }
 
@@ -110,34 +94,18 @@ export async function obtenerEventoPorSlug(slug) {
 
     if (!slug) return null;
 
-    try {
+    const { data, error } = await conTimeout(
+        supabase
+            .from('eventos')
+            .select(CAMPOS_DETALLE)
+            .eq('slug', slug)
+            .in('estado', ESTADOS_VISIBLES)
+            .maybeSingle()
+    );
 
-        const { data, error } = await conTimeout(
-            supabase
-                .from('eventos')
-                .select(CAMPOS_DETALLE)
-                .eq('slug', slug)
-                .in('estado', ESTADOS_VISIBLES)
-                .maybeSingle()
-        );
+    if (error) throw error;
 
-        if (error) throw error;
-
-        return data ? normalizar(data) : null;
-
-    } catch (error) {
-
-        console.warn(
-            '[datos] Supabase no respondió para el evento; se usa el respaldo local.',
-            error
-        );
-
-        const todos = await cargarLegado({ limite: 200 });
-        const encontrado = todos.find(e => e.slug === slug);
-
-        return encontrado ?? null;
-
-    }
+    return data ? normalizar(data) : null;
 
 }
 
@@ -190,86 +158,5 @@ function normalizar(fila) {
 
         vigencia: vigenciaEvento(fila.fecha_inicio, fila.fecha_fin)
     };
-
-}
-
-
-// ── Respaldo transitorio ──────────────────────────────────────────────────────
-
-async function cargarLegado({ limite = 6 } = {}) {
-
-    try {
-
-        const respuesta = await fetch(RUTA_LEGACY);
-
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-
-        const datos = await respuesta.json();
-
-        return datos.map(normalizarLegado).slice(0, limite);
-
-    } catch (error) {
-
-        console.error('[datos] No se pudo cargar el respaldo de eventos.', error);
-
-        return [];
-
-    }
-
-}
-
-/** Traduce el JSON antiguo al mismo formato que produce Postgres. */
-function normalizarLegado(evento) {
-
-    const esInterno = (evento.accion ?? 'externo') === 'interno';
-    const url = esInterno ? '' : (evento.url_destino ?? '').trim();
-    const tieneInscripcion = url.length > 0;
-
-    const iso = aIsoDesdeTexto(evento.fecha);
-
-    return {
-        id: evento.id,
-        slug: `evento-${evento.id}`,
-        titulo: evento.titulo ?? '',
-        resumen: evento.descripcion ?? '',
-        contenido: `<p>${evento.descripcion ?? ''}</p>`,
-        lugar: evento.lugar ?? 'Campus UDH',
-
-        fechaInicio: iso,
-        fechaFin: null,
-        fechaTexto: evento.fecha ?? 'Fecha por definir',
-        ordenable: aFechaOrdenable(iso),
-
-        imagenUrl: null,
-        color: evento.imagen ?? '#a4161a',
-
-        tieneInscripcion,
-        urlInscripcion: url,
-        textoBoton: evento.texto_boton ?? (tieneInscripcion ? 'Inscribirse' : 'Ver detalles'),
-        icono: tieneInscripcion ? '↗' : '→',
-
-        vigencia: vigenciaEvento(iso, null)
-    };
-
-}
-
-/** "20 Abr, 2026" → ISO. Solo para el respaldo; ya no se usa con Postgres. */
-function aIsoDesdeTexto(texto) {
-
-    if (!texto) return null;
-
-    const meses = {
-        Ene: 0, Feb: 1, Mar: 2, Abr: 3, May: 4, Jun: 5,
-        Jul: 6, Ago: 7, Sep: 8, Oct: 9, Nov: 10, Dic: 11
-    };
-
-    const partes = texto.replace(',', '').split(' ');
-    const dia = parseInt(partes[0], 10);
-    const mes = meses[partes[1]];
-    const anio = parseInt(partes[2], 10);
-
-    if (Number.isNaN(dia) || mes === undefined || Number.isNaN(anio)) return null;
-
-    return new Date(Date.UTC(anio, mes, dia)).toISOString();
 
 }

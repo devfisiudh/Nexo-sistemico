@@ -1,7 +1,7 @@
 // js/eventos.js — Agenda de eventos + búsqueda local.
 
 import { listarEventos } from './data/eventos.js';
-import { escapar, normalizarTexto } from './utils/formato.js';
+import { escapar, normalizarTexto, urlSegura } from './utils/formato.js';
 
 let todosLosEventos = [];
 
@@ -66,8 +66,12 @@ function buildTarjeta(evento) {
         : '';
 
     // El botón externo va a la inscripción; el interno, a la página de detalle.
-    const enlace = evento.tieneInscripcion
-        ? `href="${escapar(evento.urlInscripcion)}" target="_blank" rel="noopener noreferrer"`
+    // urlInscripcion se vuelve a validar al mostrar (urlSegura): si no es un
+    // enlace seguro, el botón cae al enlace de detalle.
+    const inscripcion = urlSegura(evento.urlInscripcion);
+
+    const enlace = evento.tieneInscripcion && inscripcion
+        ? `href="${escapar(inscripcion)}" target="_blank" rel="noopener noreferrer"`
         : `href="/evento?slug=${encodeURIComponent(evento.slug)}"`;
 
     return `

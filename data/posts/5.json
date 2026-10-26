@@ -1,4 +1,0 @@
-{
-  "id": 5,
-  "contenido_html": "<p>En una conferencia de prensa realizada en el auditorio central, la Facultad de Ingeniería de Sistemas presentó los primeros resultados del proyecto piloto <strong>'Huánuco Smart'</strong>.</p> <h2>Tecnología LoRaWAN</h2> <p>El sistema utiliza sensores ESP32 conectados mediante protocolo LoRaWAN para monitorear la calidad del aire y el flujo vehicular en tiempo real en los distritos de Amarilis y Pillco Marca.</p> <h2>Impacto esperado</h2> <p>El objetivo es reducir la congestión vehicular en un 30% mediante la sincronización inteligente de semáforos en el Jr. Dos de Mayo, utilizando un algoritmo de Inteligencia Artificial desarrollado por tesistas de la facultad.</p>"
-}

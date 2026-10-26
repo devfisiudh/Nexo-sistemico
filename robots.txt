@@ -11,8 +11,7 @@ Disallow: /admin
 Disallow: /sql
 Disallow: /README.txt
 
-# Fragmentos y respaldos: no son páginas para posicionar
+# Fragmentos: no son páginas para posicionar
 Disallow: /components/
-Disallow: /data/
 
 Sitemap: https://nexo-sistemico.vercel.app/sitemap.xml

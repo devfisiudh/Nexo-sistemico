@@ -5,7 +5,7 @@
 
 import { obtenerEventoPorSlug } from './data/eventos.js';
 import { obtenerEventoArchivado } from './data/historial.js';
-import { escapar } from './utils/formato.js';
+import { escapar, urlSegura } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 import { formatearFecha } from './utils/formato.js';
 import { actualizarMetadatos } from './utils/seo.js';
@@ -88,10 +88,13 @@ function renderDetalle(contenedor, evento) {
     const cuerpo = prepararContenido(evento.contenido)
         || `<p class="lead">${escapar(evento.resumen)}</p>`;
 
-    const cta = evento.tieneInscripcion && evento.urlInscripcion
+    // Enlace de inscripción vuelto a validar al mostrar (urlSegura).
+    const inscripcion = urlSegura(evento.urlInscripcion);
+
+    const cta = evento.tieneInscripcion && inscripcion
         ? `
             <div class="post-action">
-                <a href="${escapar(evento.urlInscripcion)}" target="_blank" rel="noopener noreferrer" class="post-btn">
+                <a href="${escapar(inscripcion)}" target="_blank" rel="noopener noreferrer" class="post-btn">
                     ${escapar(evento.textoBoton || 'Inscribirse')} ↗
                 </a>
             </div>`

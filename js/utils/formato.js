@@ -5,7 +5,7 @@
 
 /**
  * Convierte un TIMESTAMPTZ de Postgres a texto "29 Dic, 2025".
- * Es el formato que ya usa el sitio (ver data/noticias.json).
+ * Es el formato que ya usa el sitio.
  */
 export function formatearFecha(iso) {
     if (!iso) return 'Sin fecha';
@@ -129,7 +129,7 @@ export function colorPorClave(texto) {
     return PALETA[hash % PALETA.length];
 }
 
-// Tonos ya presentes en el diseño original (data/noticias.json).
+// Tonos ya presentes en el diseño original del portal.
 const PALETA = [
     '#a4161a', '#0077b6', '#7f5539',
     '#6a040f', '#161616', '#333333'
@@ -192,6 +192,33 @@ export function escapar(texto) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+/**
+ * Devuelve la URL solo si es segura para meterla en un href.
+ *
+ * El panel valida los enlaces al guardar, pero el portal vuelve a comprobarlo
+ * aquí: quien tenga acceso a la API podría guardar a mano algo como
+ * `javascript:alert(1)` o una ruta protocol-relativa (`//evil.com`) y el
+ * botón lo llevaría a otro sitio. Aquí se admiten http(s), mailto y tel, más
+ * rutas internas de una sola barra; cualquier otra cosa devuelve ''.
+ */
+const ESQUEMAS_DE_ENLACE = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+
+export function urlSegura(url) {
+    const valor = String(url ?? '').trim();
+
+    if (!valor) return '';
+
+    // Ruta interna: una sola barra inicial ("//host" y "/\host" son externas).
+    if (valor.startsWith('/') && !/^\/[\\/]/.test(valor)) return valor;
+
+    try {
+        const enlace = new URL(valor);
+        return ESQUEMAS_DE_ENLACE.has(enlace.protocol) ? valor : '';
+    } catch {
+        return '';
+    }
 }
 
 /** Normaliza para comparar en búsquedas: minúsculas, sin acentos. */

@@ -4,7 +4,7 @@
 // campos. Aquí solo se dibuja y se escapa.
 
 import { listarAnuncios } from './data/anuncios.js';
-import { escapar } from './utils/formato.js';
+import { escapar, urlSegura } from './utils/formato.js';
 import { prepararContenido } from './utils/sanitizar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -104,7 +104,10 @@ function cuerpoAnuncio(anuncio) {
 
 function botonDestino(anuncio) {
 
-    if (anuncio.destinoTipo === 'ninguno' || !anuncio.destinoUrl) return '';
+    // Enlace vuelto a validar al mostrar (ver urlSegura en formato.js).
+    const destino = urlSegura(anuncio.destinoUrl);
+
+    if (anuncio.destinoTipo === 'ninguno' || !destino) return '';
 
     const icono = ICONOS[anuncio.destinoTipo] ?? '🔗';
 
@@ -113,8 +116,8 @@ function botonDestino(anuncio) {
     const esEmail = anuncio.destinoTipo === 'email';
 
     const atributos = esEmail
-        ? `href="${escapar(anuncio.destinoUrl)}"`
-        : `href="${escapar(anuncio.destinoUrl)}" target="_blank" rel="noopener noreferrer"`;
+        ? `href="${escapar(destino)}"`
+        : `href="${escapar(destino)}" target="_blank" rel="noopener noreferrer"`;
 
     return `
         <div class="anuncio-footer">

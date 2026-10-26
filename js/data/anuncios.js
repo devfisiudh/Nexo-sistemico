@@ -1,8 +1,9 @@
 // js/data/anuncios.js — Capa de acceso a datos del tablón de Comunidad.
 //
-// Mismo patrón que noticias.js y eventos.js: Supabase con respaldo local y
-// timeout, y una capa de normalización para que la vista no sepa de dónde
-// salió el dato.
+// Mismo patrón que noticias.js y eventos.js: una sola fuente (Supabase), un
+// timeout que convierte una conexión colgada en un error visible en la vista,
+// y una capa de normalización para que la vista no sepa de dónde salió el
+// dato. El respaldo a data/anuncios.json se retiró con la migración completa.
 //
 // NOTA SOBRE EL AUTOR: la tabla tiene `autor_id` (rastro de auditoría) y
 // `autor_texto` (lo que ve el visitante). No se puede resolver el nombre desde
@@ -28,8 +29,6 @@ const CAMPOS = `
     created_at
 `;
 
-const RUTA_LEGACY = '../data/anuncios.json';
-
 // Estados que el portal acepta mostrar. RLS aplica además la ventana de
 // fechas (sql/04_estado_programado.sql): un PROGRAMADO sin fecha llegada no
 // vuelve por mucho que lo pidamos aquí.
@@ -47,35 +46,22 @@ const TIMEOUT_MS = 5000;
  */
 export async function listarAnuncios({ limite = 12 } = {}) {
 
-    try {
+    const { data, error } = await conTimeout(
+        supabase
+            .from('anuncios')
+            .select(CAMPOS)
+            .in('estado', ESTADOS_VISIBLES)
+            // El orden va por created_at, NO por fecha_inicio: esa columna
+            // controla la visibilidad, no la recencia. Ordenar por ella
+            // mezcla un aviso vigente desde ayer con uno sin fecha, y deja
+            // el orden a merced de empates cuando varios comparten día.
+            .order('created_at', { ascending: false })
+            .limit(limite)
+    );
 
-        const { data, error } = await conTimeout(
-            supabase
-                .from('anuncios')
-                .select(CAMPOS)
-                .in('estado', ESTADOS_VISIBLES)
-                // El orden va por created_at, NO por fecha_inicio: esa columna
-                // controla la visibilidad, no la recencia. Ordenar por ella
-                // mezcla un aviso vigente desde ayer con uno sin fecha, y deja
-                // el orden a merced de empates cuando varios comparten día.
-                .order('created_at', { ascending: false })
-                .limit(limite)
-        );
+    if (error) throw error;
 
-        if (error) throw error;
-
-        return (data ?? []).map(normalizar);
-
-    } catch (error) {
-
-        console.warn(
-            '[datos] Supabase no respondió para anuncios; se usa el respaldo local.',
-            error
-        );
-
-        return await cargarLegado({ limite });
-
-    }
+    return (data ?? []).map(normalizar);
 
 }
 
@@ -121,46 +107,5 @@ function normalizar(fila) {
         fechaFin: fila.fecha_fin ?? null,
         fechaTexto: formatearRangoFechas(fila.fecha_inicio, fila.fecha_fin)
     };
-
-}
-
-
-// ── Respaldo transitorio ──────────────────────────────────────────────────────
-
-async function cargarLegado({ limite = 12 } = {}) {
-
-    try {
-
-        const respuesta = await fetch(RUTA_LEGACY);
-
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-
-        const datos = await respuesta.json();
-
-        return datos.slice(0, limite).map(fila => ({
-            id: fila.id,
-            titulo: fila.titulo ?? '',
-            tipo: (fila.tipo_anuncio ?? 'info').toLowerCase(),
-            modo: fila.modo ?? 'texto',
-            texto: fila.texto ?? '',
-            autor: fila.autor ?? '',
-            imagenUrl: (fila.imagen_url ?? '').trim() || null,
-
-            destinoUrl: fila.destino_url ?? '',
-            destinoTipo: fila.destino_tipo ?? 'ninguno',
-            destinoLabel: fila.destino_label ?? 'Ver más',
-
-            fechaInicio: null,
-            fechaFin: null,
-            fechaTexto: ''
-        }));
-
-    } catch (error) {
-
-        console.error('[datos] No se pudo cargar el respaldo de anuncios.', error);
-
-        return [];
-
-    }
 
 }

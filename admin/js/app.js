@@ -2906,7 +2906,11 @@ async function vistaAnuncio(id) {
 
                 // Las páginas internas se referencian con ruta absoluta
                 // ("/pages/noticias.html"): no son URLs completas.
-                const esRutaInterna = destinoTipo === 'pagina' && destinoUrl.startsWith('/');
+                // "//host" y "/\host" NO son internas: son enlaces a otro
+                // dominio (redirección abierta), así que se descartan.
+                const esRutaInterna = destinoTipo === 'pagina'
+                    && destinoUrl.startsWith('/')
+                    && !/^\/[\\/]/.test(destinoUrl);
 
                 if (esRutaInterna) {
                     // Válido: se deja pasar tal cual.
