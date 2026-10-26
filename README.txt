@@ -266,7 +266,7 @@ se pueden volver a ejecutar sin romper nada.
                                 archivados y vencidos, nunca borradores.
   09_seguridad_delete.sql       Políticas de DELETE: en noticias, eventos y
                                 anuncios solo borra un administrador (los
-                                editores no borran ni lo suyo); en
+                                editores no borran ni lo suyo) y en
                                 perfiles_admin, solo la cuenta maestra.
                                 Ver «BORRADO Y GUARDADO» en la sección 7.
 
@@ -303,7 +303,13 @@ BORRADO Y GUARDADO — quién puede qué (RLS)
       noticias / eventos / anuncios  solo administrador (maestro incluido)
       perfiles_admin                 solo la cuenta maestra
   La interfaz ya exigía ese nivel (puedeBorrarContenido), pero la base no se
-  fía de la interfaz. Las políticas de SELECT/INSERT/UPDATE no se tocan.
+  fía de la interfaz. Las políticas de SELECT/INSERT/UPDATE no se tocan (los
+  editores siguen subiendo y editando sus imágenes).
+  El bucket de imágenes NO se restringe a administrador: al cambiar una
+  portada el panel borra el archivo anterior, y eso lo hacen también los
+  editores; exigir administrador ahí dejaría archivos huérfanos sin ganar
+  seguridad (los editores ya pueden editar cualquier fila). El bloque E del
+  SQL 09 lo documenta, con el ALTER por si algún día se quiere aplicar.
   El borrado de cuentas sigue yendo por eliminar_usuario_admin (SECURITY
   DEFINER, sql/07): exige maestro y prohíbe borrarse a sí mismo.
 

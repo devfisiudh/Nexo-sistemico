@@ -16,6 +16,7 @@
 --
 --   noticias / eventos / anuncios  -> solo administrador (maestro incluido)
 --   perfiles_admin                 -> solo la cuenta maestra
+--   storage (portadas)             -> NO se restringe: ver bloque E
 --
 -- Las políticas de SELECT/INSERT/UPDATE existentes no se tocan: siguen
 -- mandando las de siempre (anon solo lee PUBLICADO vigente, editores solo
@@ -134,6 +135,35 @@ CREATE POLICY perfiles_borrar_solo_maestro
 
 COMMIT;
 
+-- -----------------------------------------------------------------------------
+-- E) Storage: POR QUÉ NO SE TOCA (decisión, no es un olvido).
+--
+--    La política que trae Supabase (admin_storage_delete) permite borrar
+--    archivos del bucket a cualquier cuenta ACTIVA del panel, editores
+--    incluidos. Parece un hueco, pero es exactamente lo que la propia
+--    interfaz necesita: al cambiar o quitar una portada, el panel borra el
+--    archivo anterior (admin/js/app.js, guardarContenido) y eso lo hacen
+--    también los editores. Exigir administrador en storage no aporta
+--    seguridad real —los editores ya tienen UPDATE sobre todas las filas de
+--    contenido— y en cambio rompería la sustitución de portadas: el DELETE
+--    fallaría, el panel solo avisa por consola y el archivo viejo quedaría
+--    huérfano en el bucket para siempre.
+--
+--    Si algún día se quiere cerrar igualmente, el bloque sería (con su
+--    propia transacción, para no arriesgar lo de arriba):
+--
+--        BEGIN;
+--        DROP POLICY IF EXISTS admin_storage_delete ON storage.objects;
+--        CREATE POLICY admin_storage_delete ON storage.objects
+--            FOR DELETE TO authenticated
+--            USING (bucket_id = 'portal-publico' AND public.es_administrador());
+--        COMMIT;
+--
+--    Lo que sí queda cubierto: el anónimo no tiene ninguna política de
+--    DELETE sobre storage (verificación 4), así que un visitante no puede
+--    borrar nada con la clave pública.
+-- -----------------------------------------------------------------------------
+
 -- =============================================================================
 -- VERIFICACIÓN (solo lectura) - copiar y ejecutar al final.
 --
@@ -164,15 +194,23 @@ WHERE schemaname = 'public'
   AND 'anon' = ANY (roles);
 
 -- =============================================================================
--- 3) Las políticas de storage sobre objetos (portal-publico), por información:
---    el panel sube y borra portadas desde el cliente. En Postgres no existe
---    storage.policies: las políticas de cualquier esquema se leen en
---    pg_policies; las de storage viven sobre storage.objects y se filtran
---    porque su qual/with_check menciona el bucket.
+-- 3) Storage, solo informativo (ver bloque E): la de DELETE debe seguir
+--    pidiendo cuenta ACTIVA (los editores cambian portadas) y las de
+--    INSERT/UPDATE idem.
 -- =============================================================================
 SELECT schemaname, tablename, policyname, cmd, roles, qual, with_check
 FROM pg_policies
 WHERE schemaname = 'storage'
   AND tablename = 'objects'
   AND (qual LIKE '%portal-publico%' OR with_check LIKE '%portal-publico%')
-ORDER BY policyname;
+ORDER BY cmd, policyname;
+
+-- =============================================================================
+-- 4) Tampoco el visitante anónimo puede borrar archivos (debe dar 0 filas).
+-- =============================================================================
+SELECT policyname, cmd, roles
+FROM pg_policies
+WHERE schemaname = 'storage'
+  AND tablename = 'objects'
+  AND cmd = 'DELETE'
+  AND 'anon' = ANY (roles);
