@@ -21,6 +21,12 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <link rel="shortcut icon" href="../assets/icons/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+    <link rel="preload" href="../components/Layout/navbar.html" as="fetch" type="text/html" crossorigin>
+    <link rel="preload" href="../components/Layout/footer.html" as="fetch" type="text/html" crossorigin>
+    <link rel="preload" href="../assets/img/logo-nexo.png" as="image">
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/blog.css">
@@ -81,9 +87,9 @@
     <div id="footer-container"></div>
 
     <!-- supabase-js debe estar cargado antes que cualquier módulo que lo importe -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
 
-    <script src="../js/main.js"></script>
+    <script defer src="../js/main.js"></script>
     <script type="module" src="../js/historico.js"></script>
 </body>
 </html>

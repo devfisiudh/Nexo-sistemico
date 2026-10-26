@@ -61,7 +61,7 @@ function renderNoticias(noticias) {
 function buildTarjeta(noticia) {
 
     const portada = noticia.imagenUrl
-        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" class="card-cover" loading="lazy">`
+        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" class="card-cover" loading="lazy" decoding="async">`
         : '';
 
     return `

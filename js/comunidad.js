@@ -83,7 +83,7 @@ function cuerpoAnuncio(anuncio) {
 
     const imagen = anuncio.imagenUrl
         ? `<div class="anuncio-img-wrap">
-               <img src="${escapar(anuncio.imagenUrl)}" alt="" class="anuncio-img-full" loading="lazy">
+               <img src="${escapar(anuncio.imagenUrl)}" alt="" class="anuncio-img-full" loading="lazy" decoding="async">
            </div>`
         : '';
 

@@ -58,7 +58,7 @@ function renderEventos(eventos) {
 function buildTarjeta(evento) {
 
     const portada = evento.imagenUrl
-        ? `<img src="${escapar(evento.imagenUrl)}" alt="" class="card-cover" loading="lazy">`
+        ? `<img src="${escapar(evento.imagenUrl)}" alt="" class="card-cover" loading="lazy" decoding="async">`
         : '';
 
     const distintivo = evento.vigencia.etiqueta

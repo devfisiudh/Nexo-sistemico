@@ -2,7 +2,9 @@
    GLOBAL.CSS — Nexo Sistémico UDH · Dark Tech
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+/* Las fuentes se cargan con <link> en el <head> de cada página (más preconnect):
+   un @import aquí encadenaba global.css -> CSS de fuentes -> woff2 y retrasaba
+   la primera letra. Mantener esta línea retrasaría otra vez la carga. */
 
 :root {
     /* PALETA PRINCIPAL */

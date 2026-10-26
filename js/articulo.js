@@ -94,7 +94,7 @@ function renderizarCabecera(contenedor, noticia) {
     const fechaTexto = noticia.fecha || (fechaISO ? formatearFecha(fechaISO) : 'Sin fecha');
 
     const portada = noticia.imagenUrl
-        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" loading="lazy">`
+        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" loading="lazy" decoding="async">`
         : '<span class="post-hero-placeholder" aria-hidden="true">IMAGEN</span>';
 
     const kicker = noticia.categoria

@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function tarjetaNoticia(noticia) {
 
     const portada = noticia.imagenUrl
-        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" class="latest-cover" loading="lazy">`
+        ? `<img src="${escapar(noticia.imagenUrl)}" alt="" class="latest-cover" loading="lazy" decoding="async">`
         : '';
 
     return `

@@ -81,7 +81,7 @@ function renderDetalle(contenedor, evento) {
         : '';
 
     const portada = evento.imagenUrl
-        ? `<img src="${escapar(evento.imagenUrl)}" alt="" loading="lazy">`
+        ? `<img src="${escapar(evento.imagenUrl)}" alt="" loading="lazy" decoding="async">`
         : '<span class="post-hero-placeholder" aria-hidden="true">IMAGEN</span>';
 
     // El cuerpo puede venir vacío; en ese caso mostramos el resumen.
