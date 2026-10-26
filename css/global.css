@@ -28,6 +28,14 @@
     --antler:    #888888;
     --text-muted:#555555;
 
+    /* CONTRASTE AA (WCAG 4.5:1) sobre los fondos oscuros del portal.
+       --scarlet (#E31C25) y #e63946 llegan a 4.1–4.3 como texto: se usan
+       como color de marca en bordes y fondos, nunca para letras. */
+    --rojo-texto:  #FF4149;   /* rojo legible como texto */
+    --rojo-btn:    #D62839;   /* rojo de fondo con letras blancas */
+    --gris-texto:  #8F8F8F;   /* gris secundario legible */
+    --foco:        #FF4149;   /* anillo de foco visible */
+
     /* SOMBRAS */
     --shadow-sm: 0 2px 6px rgba(0,0,0,0.5);
     --shadow-md: 0 6px 16px rgba(0,0,0,0.7);
@@ -109,6 +117,20 @@ h1, h2, h3, h4 {
     outline-offset: -3px;
 }
 
+/* FOCO VISIBLE (WCAG 2.4.7)
+   Regla global para todo el portal: los navegadores por teclado siempre ven
+   dónde están. Se aplica con !important porque varios estilos puntuales
+   anulan el outline (campos de búsqueda, botones del editor). */
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--foco) !important;
+    outline-offset: 2px;
+}
+
+.skip-link:focus-visible {
+    outline: 3px solid #fff !important;
+    outline-offset: -3px;
+}
+
 /* LOADER */
 .loader-simple {
     color: var(--antler);
@@ -118,5 +140,5 @@ h1, h2, h3, h4 {
 
 /* HIGHLIGHT */
 .highlight {
-    color: var(--scarlet);
+    color: var(--rojo-texto);
 }

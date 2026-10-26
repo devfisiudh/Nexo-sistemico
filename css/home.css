@@ -23,7 +23,7 @@
 }
 
 .hero .highlight {
-    color: #e63946; /* Rojo FISI */
+    color: var(--rojo-texto); /* Rojo FISI */
 }
 
 .hero p {
@@ -34,7 +34,7 @@
 }
 
 .cta-button {
-    background-color: #e63946;
+    background-color: var(--rojo-btn);
     color: white;
     padding: 15px 30px;
     border-radius: 5px;
@@ -133,7 +133,7 @@
 }
 
 .aliado-card p {
-    color: #666;
+    color: var(--gris-texto);
     font-size: 0.85rem;
     margin: 0;
 }
@@ -293,7 +293,9 @@
 
 .badge-evento {
     background: rgba(230,57,70,0.2);
-    color: #e63946;
+    /* Sobre el fondo translúcido del propio badge el rojo base se queda en
+       4.3:1; este tono (el mismo del hover) llega a 5.3:1. */
+    color: #FF6B70;
     border: 1px solid #e63946;
 }
 
@@ -321,7 +323,7 @@
 
 .latest-meta {
     font-size: 0.78rem;
-    color: #666;
+    color: var(--gris-texto);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -344,7 +346,7 @@
 }
 
 .latest-link {
-    color: #e63946;
+    color: var(--rojo-texto);
     font-weight: bold;
     font-size: 0.9rem;
     text-decoration: none;
@@ -365,14 +367,14 @@
 }
 
 .latest-links a {
-    color: #666;
+    color: var(--gris-texto);
     font-size: 0.88rem;
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .latest-links a:hover {
-    color: #e63946;
+    color: var(--rojo-texto);
 }
 
 /* Responsivo */

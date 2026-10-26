@@ -9,7 +9,7 @@
 }
 
 .about-title {
-    color: #e63946; /* Rojo Scarlet */
+    color: var(--rojo-texto); /* Rojo Scarlet */
     font-size: 3rem;
     margin-bottom: 15px;
     font-weight: 800;
@@ -81,7 +81,7 @@
 }
 
 .quote-author {
-    color: #e63946; /* Autor en rojo */
+    color: var(--rojo-texto); /* Autor en rojo */
     font-weight: bold;
     margin-top: 10px;
 }
@@ -92,7 +92,7 @@
     top: -20px;
     left: 20px;
     font-size: 10rem;
-    color: #e63946;
+    color: var(--rojo-texto);
     opacity: 0.1; /* Transparente para no molestar */
     font-family: serif;
 }
@@ -140,7 +140,7 @@
 .dev-avatar {
     width: 50px;
     height: 50px;
-    background-color: #e63946; /* Rojo Notch */
+    background-color: var(--rojo-btn); /* Rojo Notch */
     border-radius: 50%;
     display: flex;
     align-items: center;

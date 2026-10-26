@@ -98,7 +98,7 @@ function renderizarCabecera(contenedor, noticia) {
         : '<span class="post-hero-placeholder" aria-hidden="true">IMAGEN</span>';
 
     const kicker = noticia.categoria
-        ? `<span class="post-kicker dot" style="color:${escapar(noticia.color || 'var(--scarlet)')}">${escapar(noticia.categoria)}</span>`
+        ? `<span class="post-kicker dot" style="--kicker:${escapar(noticia.color || 'var(--scarlet)')}">${escapar(noticia.categoria)}</span>`
         : '';
 
     contenedor.innerHTML = `
@@ -174,7 +174,7 @@ function renderCompacta(contenedor, noticia) {
 
         <header class="post-historico-cabecera">
             ${noticia.categoria
-                ? `<span class="post-kicker dot" style="color:${escapar(noticia.color || 'var(--scarlet)')}">${escapar(noticia.categoria)}</span>`
+                ? `<span class="post-kicker dot" style="--kicker:${escapar(noticia.color || 'var(--scarlet)')}">${escapar(noticia.categoria)}</span>`
                 : ''
             }
             <h1 class="post-title">${escapar(noticia.titulo)}</h1>

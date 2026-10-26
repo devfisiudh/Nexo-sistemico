@@ -246,9 +246,10 @@ function confirmarAccion({ titulo, mensaje, confirmar = 'Eliminar' }) {
                 role="alertdialog"
                 aria-modal="true"
                 aria-labelledby="confirmar-titulo"
+                aria-describedby="confirmar-mensaje"
             >
                 <h3 id="confirmar-titulo">${esc(titulo)}</h3>
-                <p>${mensaje}</p>
+                <p id="confirmar-mensaje">${mensaje}</p>
 
                 <div class="confirmar-acciones">
                     <button type="button" class="confirmar-cancelar">Cancelar</button>
@@ -256,17 +257,41 @@ function confirmarAccion({ titulo, mensaje, confirmar = 'Eliminar' }) {
                 </div>
             </div>`;
 
+        // A quién devolver el foco al cerrar (el botón que abrió el diálogo).
+        const focoAnterior = document.activeElement;
+
         const cerrar = (resultado) => {
             document.removeEventListener('keydown', alTeclar);
             fondo.remove();
+
+            if (focoAnterior && typeof focoAnterior.focus === 'function' && document.contains(focoAnterior)) {
+                focoAnterior.focus();
+            }
+
             resolver(resultado);
         };
 
         const alTeclar = (evento) => {
             if (evento.key === 'Escape') { evento.preventDefault(); cerrar(false); }
+
             if (evento.key === 'Enter' && evento.target?.classList.contains('confirmar-ok')) {
                 evento.preventDefault();
                 cerrar(true);
+            }
+
+            // El foco no puede salir del diálogo mientras esté abierto.
+            if (evento.key === 'Tab') {
+                const botones = [...fondo.querySelectorAll('button')];
+                const primero = botones[0];
+                const ultimo = botones[botones.length - 1];
+
+                if (evento.shiftKey && document.activeElement === primero) {
+                    evento.preventDefault();
+                    ultimo.focus();
+                } else if (!evento.shiftKey && document.activeElement === ultimo) {
+                    evento.preventDefault();
+                    primero.focus();
+                }
             }
         };
 
@@ -3391,6 +3416,10 @@ function hashCanonico(ruta) {
 
 let secuenciaRuta = 0;
 
+/* La primera vez que se enruta (carga de la página) no se mueve el foco:
+   solo después, para que navegar con teclado anuncie la vista nueva. */
+let primeraRuta = true;
+
 async function enrutar() {
 
     let ruta = parsearHash();
@@ -3424,7 +3453,13 @@ async function enrutar() {
     $('#header-subtitle').textContent = meta.subtitulo;
 
     document.querySelectorAll('.sidebar-link').forEach((enlace) => {
-        enlace.classList.toggle('active', enlace.getAttribute('href') === `#/${ruta.seccion}`);
+        const activo = enlace.getAttribute('href') === `#/${ruta.seccion}`;
+
+        enlace.classList.toggle('active', activo);
+
+        // La sección abierta queda marcada para lectores de pantalla.
+        if (activo) enlace.setAttribute('aria-current', 'page');
+        else enlace.removeAttribute('aria-current');
     });
 
     const construir = () => {
@@ -3445,6 +3480,11 @@ async function enrutar() {
 
         contenedor.innerHTML = '';
         contenedor.appendChild(vista);
+
+        // Al cambiar de vista el foco pasa al contenido: si se queda en el
+        // enlace anterior, el teclado no anuncia nada de la pantalla nueva.
+        if (!primeraRuta) contenedor.focus({ preventScroll: false });
+        primeraRuta = false;
     } catch (error) {
         if (miPase !== secuenciaRuta) return;
 

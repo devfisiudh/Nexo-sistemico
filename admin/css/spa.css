@@ -36,7 +36,7 @@
 .view-loading {
     padding: 45px 0;
     text-align: center;
-    color: #777;
+    color: #6E6E6E;
 }
 
 
@@ -58,8 +58,11 @@
     outline: none;
 }
 
-:focus-visible {
-    outline: 2px solid #a4161a;
+/* La regla va con !important: varios estilos de campo anulan el outline
+   (`outline: none` en :focus) y este anillo es lo único que dice dónde
+   está el teclado. #F06064 se lee sobre blanco y sobre la barra lateral. */
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid #F06064 !important;
     outline-offset: 2px;
 }
 

@@ -32,23 +32,52 @@ function initMobileMenu() {
     const hamburger = document.querySelector(".hamburger");
     const navMenu = document.querySelector(".nav-menu");
     if (hamburger && navMenu) {
+
+        // El estado del menú se refleja en aria-expanded para que un lector
+        // de pantalla sepa si está abierto o cerrado.
+        const ponerEstado = (abierto) => {
+            hamburger.classList.toggle("active", abierto);
+            navMenu.classList.toggle("active", abierto);
+            hamburger.setAttribute("aria-expanded", String(abierto));
+            hamburger.setAttribute("aria-label", abierto ? "Cerrar menú" : "Abrir menú");
+        };
+
         hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("active");
-            navMenu.classList.toggle("active");
+            ponerEstado(!navMenu.classList.contains("active"));
         });
-        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
-            hamburger.classList.remove("active");
-            navMenu.classList.remove("active");
+
+        // Escape cierra el menú y devuelve el foco al botón.
+        document.addEventListener("keydown", (evento) => {
+            if (evento.key === "Escape" && navMenu.classList.contains("active")) {
+                ponerEstado(false);
+                hamburger.focus();
+            }
+        });
+
+        document.querySelectorAll(".nav-link, .nav-btn-special").forEach(n => n.addEventListener("click", () => {
+            ponerEstado(false);
         }));
     }
 }
 
 function highlightCurrentPage() {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        if (link.getAttribute('href').includes(currentPath) && currentPath !== '/' && currentPath !== '/index.html') {
-            link.style.color = 'var(--scarlet)';
-        }
+
+    // Ruta normalizada: sin /index.html y con la raíz como "/".
+    let actual = window.location.pathname.replace(/\/index\.html$/, "");
+    if (!actual) actual = "/";
+    if (!actual.startsWith("/")) actual = `/${actual}`;
+    if (!actual.endsWith("/") && actual.split("/").length === 3) actual += "/";
+
+    document.querySelectorAll('.nav-link, .nav-btn-special').forEach(link => {
+
+        let destino = link.getAttribute("href") || "";
+        if (destino.startsWith("/proyectos/")) destino += "/";
+
+        const coincide = destino === actual;
+
+        // aria-current marca la página activa para navegadores y lectores;
+        // el color lo pone el CSS a partir de ese atributo.
+        if (coincide) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
     });
 }

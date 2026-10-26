@@ -38,7 +38,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #444;
+    color: var(--gris-texto);
     overflow: hidden;
     position: relative;
 }
@@ -105,7 +105,7 @@
 }
 /* Si es evento, pintamos la etiqueta roja */
 .cat-evento { 
-    background-color: #e63946; 
+    background-color: var(--rojo-btn); 
     border-color: #e63946;
 }
 
@@ -114,7 +114,7 @@
 /* ESTILO 1: NOTICIAS (Enlace sutil "Leer más") */
 .read-more {
     margin-top: auto;
-    color: #e63946;
+    color: var(--rojo-texto);
     font-weight: 700;
     font-size: 0.95rem;
     display: inline-flex;
@@ -132,7 +132,7 @@
 /* ESTILO 2: EVENTOS (Botón Sólido Grande) */
 .card-cta {
     margin-top: auto;
-    background-color: #e63946; /* Fondo Rojo Sólido */
+    background-color: var(--rojo-btn); /* Fondo Rojo Sólido */
     color: white !important;
     padding: 12px 0; /* Un poco más alto para tocar */
     width: 100%;     /* Ocupa todo el ancho */
@@ -150,7 +150,7 @@
 
 .card-cta:hover {
     background-color: transparent; /* Se vuelve transparente */
-    color: #e63946 !important; /* Letras rojas */
+    color: var(--rojo-texto) !important; /* Letras rojas */
     box-shadow: 0 0 15px rgba(230, 57, 70, 0.4); /* Resplandor */
 }
 
@@ -213,11 +213,15 @@
     border-radius: 50px;
     text-transform: uppercase;
     z-index: 1;
+    /* Fondo oscuro propio: el distintivo cae encima de la portada (o del
+       color de categoría) y el texto debe leerse pase lo que pase. */
+    background: rgba(12, 12, 12, 0.78);
+    color: #fff;
     animation: pulseBadge 2s ease-in-out infinite;
 }
 
 .badge-hoy {
-    background: #e63946;
+    background: var(--rojo-btn);
     color: #fff;
     box-shadow: 0 0 12px rgba(230,57,70,0.6);
 }
@@ -261,14 +265,14 @@
     left: 0;
     width: 60px;
     height: 2px;
-    background: #e63946;
+    background: var(--rojo-btn);
 }
 
 .page-header-tag {
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 2px;
-    color: #e63946;
+    color: var(--rojo-texto);
     text-transform: uppercase;
     display: block;
     margin-bottom: 10px;
@@ -392,7 +396,7 @@
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: #555;
+    color: var(--gris-texto);
     text-transform: uppercase;
     margin-bottom: 2px;
 }
@@ -419,7 +423,7 @@
 }
 
 .detail-pending {
-    color: #555;
+    color: var(--gris-texto);
     margin-top: 15px;
 }
 
@@ -430,7 +434,7 @@
 
 .detail-cta-btn {
     display: inline-block;
-    background: #e63946;
+    background: var(--rojo-btn);
     color: #fff;
     font-weight: 700;
     font-size: 1rem;
@@ -443,7 +447,7 @@
 
 .detail-cta-btn:hover {
     background: transparent;
-    color: #e63946;
+    color: var(--rojo-texto);
     box-shadow: 0 0 20px rgba(227,28,37,0.3), inset 0 0 0 1px #e63946;
 }
 
@@ -456,7 +460,7 @@
 .back-link-btn {
     display: inline-block;
     margin-top: 20px;
-    color: #e63946;
+    color: var(--rojo-texto);
     font-weight: 600;
     text-decoration: none;
 }
@@ -501,7 +505,7 @@
 }
 
 .local-search-box:focus-within .local-search-icon {
-    color: var(--scarlet, #E31C25);
+    color: var(--rojo-texto);
 }
 
 #localSearchInput {
@@ -515,7 +519,7 @@
 }
 
 #localSearchInput::placeholder {
-    color: var(--text-muted, #555);
+    color: var(--gris-texto);
 }
 
 .local-search-clear {
@@ -600,7 +604,7 @@
 
 .search-no-results {
     text-align: center;
-    color: var(--text-muted, #555);
+    color: var(--gris-texto);
     padding: 60px 0;
     font-size: 1rem;
     grid-column: 1 / -1;

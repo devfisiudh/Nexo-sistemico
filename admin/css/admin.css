@@ -184,7 +184,7 @@ button:disabled {
 
 
 .sidebar-brand-small {
-    color: #d44b4f;
+    color: #F06064;
 
     font-size: 12px;
     font-weight: 700;
@@ -269,7 +269,7 @@ button:disabled {
 .admin-header p {
     margin-top: 4px;
 
-    color: #777;
+    color: #6E6E6E;
 
     font-size: 13px;
 }
@@ -299,7 +299,7 @@ button:disabled {
 .admin-user-info span {
     margin-top: 3px;
 
-    color: #777;
+    color: #6E6E6E;
 
     font-size: 12px;
 }
@@ -401,7 +401,7 @@ button:disabled {
 
 
 .stat-card small {
-    color: #888;
+    color: #6E6E6E;
 }
 
 
@@ -459,7 +459,7 @@ button:disabled {
 
 
 .action-card span {
-    color: #777;
+    color: #6E6E6E;
 
     font-size: 13px;
     line-height: 1.5;
@@ -505,7 +505,7 @@ button:disabled {
 
 
 .content-list-item small {
-    color: #888;
+    color: #6E6E6E;
 }
 
 
@@ -564,7 +564,7 @@ button:disabled {
 .empty-message {
     padding: 25px;
 
-    color: #777;
+    color: #6E6E6E;
 }
 
 
@@ -941,7 +941,7 @@ button:disabled {
 
 
 .table-title small {
-    color: #999;
+    color: #6E6E6E;
 
     font-size: 11px;
 }
@@ -975,7 +975,7 @@ button:disabled {
 .table-message {
     padding: 35px !important;
 
-    color: #777;
+    color: #6E6E6E;
 
     text-align: center !important;
 }
@@ -1348,7 +1348,7 @@ button:disabled {
 .indefinido-activo .form-group input[type="datetime-local"],
 .form-group:has(> .indefinido-row input:checked) input[type="datetime-local"] {
     background: #f0f0f0;
-    color: #999;
+    color: #6E6E6E;
     cursor: not-allowed;
 }
 
@@ -1358,7 +1358,7 @@ button:disabled {
 
     margin-top: 7px;
 
-    color: #888;
+    color: #6E6E6E;
 
     font-size: 12px;
 
@@ -1374,7 +1374,7 @@ button:disabled {
 
     margin-top: 7px;
 
-    color: #888;
+    color: #6E6E6E;
 }
 
 
@@ -1467,7 +1467,7 @@ button:disabled {
 
     background: #f7f7f7;
 
-    color: #999;
+    color: #6E6E6E;
 
     font-size: 13px;
 }

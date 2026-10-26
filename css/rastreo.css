@@ -28,7 +28,7 @@
 
 .status-badge {
     background-color: rgba(166, 27, 38, 0.2);
-    color: var(--scarlet);
+    color: var(--rojo-texto);
     border: 1px solid var(--scarlet);
     padding: 5px 12px;
     border-radius: 4px;
@@ -76,7 +76,7 @@
 }
 
 .info-text {
-    color: var(--loafer);
+    color: var(--gris-texto);
     margin-bottom: 30px;
     line-height: 1.6;
 }

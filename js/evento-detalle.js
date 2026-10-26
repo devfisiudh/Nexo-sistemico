@@ -77,7 +77,7 @@ function renderDetalle(contenedor, evento) {
     const lugar = evento.lugar || 'Por definir';
 
     const distintivo = evento.vigencia.etiqueta
-        ? `<span class="post-kicker dot" style="color:${evento.vigencia.clase === 'status-publicado' ? 'var(--scarlet)' : evento.vigencia.clase === 'status-vencido' ? '#B5151C' : 'var(--antler)'}">${escapar(evento.vigencia.etiqueta)}</span>`
+        ? `<span class="post-kicker dot" style="--kicker:${evento.vigencia.clase === 'status-publicado' ? 'var(--scarlet)' : evento.vigencia.clase === 'status-vencido' ? '#B5151C' : 'var(--antler)'}">${escapar(evento.vigencia.etiqueta)}</span>`
         : '';
 
     const portada = evento.imagenUrl
@@ -170,7 +170,7 @@ function renderCompacto(contenedor, evento) {
         </div>
 
         <header class="post-historico-cabecera">
-            <span class="post-kicker dot" style="color: var(--scarlet)">Evento</span>
+            <span class="post-kicker dot" style="--kicker: var(--scarlet)">Evento</span>
             <h1 class="post-title">${escapar(evento.titulo)}</h1>
             ${evento.resumen ? `<p class="post-lead">${escapar(evento.resumen)}</p>` : ''}
         </header>

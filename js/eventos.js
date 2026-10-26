@@ -82,7 +82,7 @@ function buildTarjeta(evento) {
                     📅 ${escapar(evento.fechaTexto)}<br>
                     📍 ${escapar(evento.lugar)}
                 </div>
-                <h3 class="card-title">${escapar(evento.titulo)}</h3>
+                <h2 class="card-title">${escapar(evento.titulo)}</h2>
                 <p class="card-excerpt">${escapar(evento.resumen)}</p>
                 <a ${enlace} class="card-cta">
                     ${escapar(evento.textoBoton)} ${evento.icono}

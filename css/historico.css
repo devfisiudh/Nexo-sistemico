@@ -96,13 +96,13 @@
 }
 
 .historico-lista a:hover {
-    color: var(--scarlet);
+    color: var(--rojo-texto);
 
     padding-left: 8px;
 }
 
 .historico-lista a:hover::after {
-    color: var(--scarlet);
+    color: var(--rojo-texto);
 
     transform: translateX(4px);
 }

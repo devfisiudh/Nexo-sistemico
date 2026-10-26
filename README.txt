@@ -291,6 +291,25 @@ VIGILANCIA CONTRA CAÍDAS
   recurren a los JSON de data/. Es una red de seguridad, no un plan: si vas a
   borrar esos archivos, quita también cargarLegado() en cada DAO.
 
+ACCESIBILIDAD (WCAG 2.1 nivel AA)
+  Contraste: los colores de texto del portal salen de variables de
+  css/global.css pensadas para los fondos oscuros: --rojo-texto (#FF4149)
+  para rojo sobre negro, --rojo-btn (#D62839) para fondo con letras
+  blancas y --gris-texto (#8F8F8F) para el gris secundario. El rojo de
+  marca (#E31C25 / #e63946) se queda en bordes y decoración: como texto
+  no llegaba a 4.5:1. En el panel claro: #6E6E6E para texto secundario y
+  #F06064 para el rojo sobre la barra oscura.
+  Foco: una regla global :focus-visible (con !important, porque varios
+  campos anulan el outline) en css/global.css y admin/css/spa.css.
+  Estructura: el navbar es <header> + <nav aria-label="Principal">, la
+  hamburguesa es un <button> con aria-expanded, la sección activa lleva
+  aria-current="page" (portal y panel) y cada vista del panel mueve el
+  foco a #admin-content al cambiar de hash.
+  Títulos: una sola jerarquía h1 → h2 en todas las páginas y en las
+  tarjetas que pinta el JS (sin saltar niveles).
+  Diálogo de confirmación: role="alertdialog", aria-modal, descripción,
+  Escape, trampa de Tab y devolución del foco al botón que lo abrió.
+
 SEO Y COMPARTIR EN REDES
   Cada página lleva en <head> su descripción, su URL canónica y el bloque
   Open Graph (og:*) con la imagen assets/img/compartir.png (1200×630, la

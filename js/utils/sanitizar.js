@@ -48,9 +48,48 @@ export function sanitizar(html) {
     );
 
     recorrer(documento.body);
+    normalizarJerarquia(documento.body);
 
     return documento.body.innerHTML;
 
+}
+
+
+/**
+ * Quita los encabezados vacíos y evita saltos de nivel en el contenido.
+ *
+ * El HTML pegado desde Word o desde el editor deja `<h4></h4>` sin texto:
+ * para un lector de pantalla son títulos fantasma, y un h4 inmediatamente
+ * después de un h2 rompe la jerarquía (WCAG 1.3.1). Como el contenido lo
+ * escribe cualquiera, aquí se garantiza la regla: nunca se salta más de un
+ * nivel respecto al título anterior.
+ */
+function normalizarJerarquia(raiz) {
+
+    const titulos = Array.from(raiz.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    let anterior = 0;
+
+    for (const titulo of titulos) {
+
+        const actual = Number(titulo.tagName[1]);
+
+        if (!anterior || actual <= anterior + 1) {
+            anterior = actual;
+            continue;
+        }
+
+        const nivel = Math.min(anterior + 1, 6);
+        const nuevo = titulo.ownerDocument.createElement(`h${nivel}`);
+
+        for (const atributo of Array.from(titulo.attributes)) {
+            nuevo.setAttribute(atributo.name, atributo.value);
+        }
+
+        while (titulo.firstChild) nuevo.appendChild(titulo.firstChild);
+
+        titulo.replaceWith(nuevo);
+        anterior = nivel;
+    }
 }
 
 
@@ -60,6 +99,12 @@ function recorrer(nodo) {
     const hijos = Array.from(nodo.childNodes);
 
     for (const hijo of hijos) {
+
+        // Comentarios (los condicionales que pega Word al pegar HTML) sobran.
+        if (hijo.nodeType === Node.COMMENT_NODE) {
+            hijo.remove();
+            continue;
+        }
 
         if (hijo.nodeType === Node.ELEMENT_NODE) {
             limpiarElemento(hijo);
@@ -98,6 +143,12 @@ function limpiarElemento(elemento) {
 
         return;
 
+    }
+
+    // Encabezado sin nada dentro (pegado de Word/editor): no aporta título.
+    if (/^h[1-6]$/.test(nombre) && !elemento.textContent.trim() && !elemento.querySelector('img, picture, video, br')) {
+        elemento.remove();
+        return;
     }
 
     for (const atributo of Array.from(elemento.attributes)) {

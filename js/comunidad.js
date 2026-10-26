@@ -90,7 +90,7 @@ function cuerpoAnuncio(anuncio) {
     const texto = anuncio.modo === 'imagen'
         ? ''
         : `<div class="anuncio-body">
-               ${anuncio.titulo ? `<h4 class="anuncio-titulo">${escapar(anuncio.titulo)}</h4>` : ''}
+               ${anuncio.titulo ? `<h2 class="anuncio-titulo">${escapar(anuncio.titulo)}</h2>` : ''}
                <div class="anuncio-texto">${prepararContenido(anuncio.texto)}</div>
                ${anuncio.autor ? `<span class="anuncio-autor">${escapar(anuncio.autor)}</span>` : ''}
            </div>`;
