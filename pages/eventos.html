@@ -11,9 +11,11 @@
 </head>
 <body>
 
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
     <div id="navbar-container"></div>
 
-    <main class="container" style="padding: 40px 20px; min-height: 80vh;">
+    <main id="contenido" class="container" style="padding: 40px 20px; min-height: 80vh;">
         <header class="page-header">
             <div class="page-header-inner">
                 <span class="page-header-tag">PAISI · UDH</span>
@@ -26,7 +28,7 @@
         <div class="local-search-wrapper">
             <div class="local-search-box">
                 <svg class="local-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" id="localSearchInput" placeholder="Buscar eventos por nombre, tipo o lugar..." autocomplete="off" />
+                <input type="text" id="localSearchInput" placeholder="Buscar eventos por nombre, tipo o lugar..." autocomplete="off" aria-label="Buscar eventos por nombre, tipo o lugar" />
                 <button class="local-search-clear" id="localSearchClear" title="Limpiar">✕</button>
             </div>
         </div>

@@ -55,7 +55,7 @@ Claves del diseño:
     pantallas de "Verificando sesión...".
 
   · El contenido tiene dos ejes independientes:
-      - `estado`      → editorial: BORRADOR | PUBLICADO | ARCHIVADO
+      - `estado`      → editorial: BORRADOR | PROGRAMADO | PUBLICADO | ARCHIVADO
       - `fecha_*`     → temporal: cuándo se publica y hasta cuándo
     Estar PUBLICADO no significa verse en el portal. El panel calcula el estado
     derivado (Publicado / Por publicar / Vencido) para que nunca haya dudas.
@@ -69,9 +69,10 @@ Claves del diseño:
 │   ├── index.html              Shell único: login + sidebar + header
 │   ├── js/
 │   │   ├── app.js              router por hash, vistas y editores
+│   │   ├── editor-rico.js      editor enriquecido tipo Word (barra de formato)
 │   │   └── utils.js            helpers compartidos (slug, fechas, visibilidad)
 │   └── css/
-│       ├── admin.css           estilos base del panel
+│       ├── admin.css           estilos base del panel (+ editor enriquecido)
 │       └── spa.css             transiciones entre vistas
 │
 ├── assets                      img · icons · docs (PDF de descarga)
@@ -80,14 +81,16 @@ Claves del diseño:
 │
 ├── js
 │   ├── main.js                 carga navbar y footer
+│   ├── historico.js            página del histórico público (dos pestañas)
 │   ├── config/supabase.js      cliente único de Supabase
 │   ├── data/                   CAPA DE DATOS del portal
 │   │   ├── noticias.js
 │   │   ├── eventos.js
-│   │   └── anuncios.js
+│   │   ├── anuncios.js
+│   │   └── historial.js        RPC de histórico (sql/08) — archivados y vencidos
 │   ├── utils/
 │   │   ├── formato.js          fechas, colores por categoría, escapado
-│   │   └── sanitizar.js        allowlist de HTML para el contenido del CMS
+│   │   └── sanitizar.js        allowlist de HTML + prepararContenido()
 │   └── <vista>.js              una vista por página (noticias, articulo, ...)
 │
 ├── pages                       HTML de las secciones internas
@@ -111,6 +114,15 @@ Ya no se edita ningún archivo a mano. Todo se hace desde /admin:
                 vigencia
 
 Detalles que conviene conocer:
+
+  CONTENIDO   El campo "Contenido" es un editor enriquecido tipo Word: escribes
+              o pegas texto (también desde Word o un blog) y el formato se
+              reconoce solo — negrita, cursiva, listas, enlaces, encabezados.
+              Lo que no es formato básico se limpia: sin <script>, sin estilos
+              inline. La alineación se guarda como clase CSS
+              (.txt-centro / .txt-der / .txt-justificado), nunca como style.
+              El textarea oculto es la fuente de verdad; lo que se mide
+              (contadores, validaciones) es texto plano, no HTML.
 
   SLUG        Se genera solo a partir del título. Edita a mano solo si lo
               necesitas; es la URL pública y no conviene cambiarlo después
@@ -149,6 +161,25 @@ Detalles que conviene conocer:
   VISIBILIDAD Un evento o anuncio "Vencido" (fecha_fin pasada) sigue en el
               panel pero ya no aparece en el portal. Para recuperarlo, amplía
               la fecha de fin o cámbialo a BORRADOR.
+
+  HISTÓRICO   /historico muestra lo archivado y lo vencido al visitante, con
+              una pestaña por sección (Noticias · Eventos), sin tocar el RLS
+              público: usa las RPC SECURITY DEFINER de sql/08. Desde los
+              listados de Noticias y Eventos hay un botón "Historia" por
+              sección (las anuncios no tienen historia; su archivo es la
+              sección Archivo del panel).
+
+  ELIMINAR    Noticias, eventos y anuncios se borran desde la tabla o desde
+              el editor (Zona de peligro), solo por encima del rol Editor y
+              con confirmación que cita el título. También borra la imagen de
+              portada. La política de DELETE está en RLS: el anónimo no puede.
+
+  CUENTAS     Administración → "+ Nuevo perfil" crea la cuenta completa en un
+              solo paso (correo + contraseña): la RPC crear_usuario_admin
+              inserta en auth.users y perfiles_admin de forma atómica, sin
+              copiar UIDs ni abrir Supabase. eliminar_usuario_admin borra la
+              cuenta. Solo la cuenta maestra crea administradores; nadie puede
+              borrarse a sí mismo ni eliminar la última cuenta principal.
 
 --------------------------------------------------------------------------------
 5. ESTRUCTURA DE LA BASE
@@ -211,6 +242,20 @@ se pueden volver a ejecutar sin romper nada.
                                 las lecturas públicas: PUBLICADO se ve ya
                                 aunque la fecha sea futura; PROGRAMADO espera
                                 su fecha (ver sección 4).
+  05_rol_maestro.sql            Añade perfiles_admin.es_maestro: una cuenta
+                                principal con control total (crea
+                                administradores, gestiona cuentas).
+  06_auth_perfiles.sql          Integración Authentication ↔ perfiles_admin:
+                                trigger que da de alta a cada usuario nuevo
+                                como EDITOR + INACTIVO, y migración de las
+                                cuentas existentes.
+  07_crear_usuario_admin.sql    RPC crear_usuario_admin y
+                                eliminar_usuario_admin: altas y bajas de
+                                cuentas desde el panel, sin tocar Supabase.
+  08_historial_publico.sql      RPC de histórico para el visitante:
+                                historial_noticias/eventos (listado) y
+                                historial_noticia/evento (detalle), solo
+                                archivados y vencidos, nunca borradores.
 
 Cada archivo lleva en los comentarios por qué existe y qué pasaba antes.
 
@@ -246,8 +291,6 @@ DESARROLLO LOCAL
 8. PENDIENTES CONOCIDOS
 --------------------------------------------------------------------------------
   · Menú "Documentos": sin implementar.
-  · Borrado de registros: el panel solo crea y edita; para eliminar contenido
-    se hace desde Supabase (Dashboard o SQL).
   · "Rastreo Bus" es una maqueta: js/rastreo.js simula una consola.
   · Categorías de noticias: la tabla guarda texto libre. Las de ejemplo están
     fijadas en js/utils/formato.js; si crece la lista, conviene una tabla.

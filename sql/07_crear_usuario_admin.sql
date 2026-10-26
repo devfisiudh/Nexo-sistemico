@@ -178,8 +178,23 @@ BEGIN
     -- ── Perfil en el panel ─────────────────────────────────────────────────
     -- El trigger de sql/06 crea la fila como EDITOR + INACTIVO; aquí se
     -- sube a lo que el administrador acaba de elegir.
+    --
+    -- Los casts explícitos son obligatorios: `rol` (enum rol_admin) y
+    -- `estado` (enum estado_usuario) NO aceptan una variable de tipo text.
+    -- Sin ellos Postgres responde:
+    --     42804: column "rol" is of type rol_admin but expression is
+    --            of type text
+    -- (los literales del trigger de sql/06 sí valen, porque un literal sin
+    -- tipo se convierte solo; una variable text, no). Los valores ya están
+    -- validados arriba, así que el cast nunca puede fallar.
     INSERT INTO public.perfiles_admin (id, nombre, rol, estado, es_maestro)
-    VALUES (v_uid, v_nombre, v_rol, v_estado, COALESCE(p_es_maestro, false))
+    VALUES (
+        v_uid,
+        v_nombre,
+        v_rol::public.rol_admin,
+        v_estado::public.estado_usuario,
+        COALESCE(p_es_maestro, false)
+    )
     ON CONFLICT (id) DO UPDATE
         SET nombre     = EXCLUDED.nombre,
             rol        = EXCLUDED.rol,
