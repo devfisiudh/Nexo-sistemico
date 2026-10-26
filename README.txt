@@ -180,6 +180,11 @@ Detalles que conviene conocer:
               copiar UIDs ni abrir Supabase. eliminar_usuario_admin borra la
               cuenta. Solo la cuenta maestra crea administradores; nadie puede
               borrarse a sí mismo ni eliminar la última cuenta principal.
+              Al insertar en auth.users, confirmation_token, recovery_token,
+              email_change y email_change_token_new van con cadena vacía (como
+              hace GoTrue) y NO con NULL: con NULL, GoTrue no puede leer la
+              fila y la cuenta no puede iniciar sesión (500 «Database error
+              finding user»).
 
 --------------------------------------------------------------------------------
 5. ESTRUCTURA DE LA BASE

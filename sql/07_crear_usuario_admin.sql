@@ -116,6 +116,14 @@ BEGIN
             instance_id, id, aud, role,
             email, encrypted_password,
             email_confirmed_at,
+            -- Estas cuatro columnas DEBEN ir con cadena vacía, nunca NULL:
+            -- es lo que escribe GoTrue al crear una cuenta y es como las lee
+            -- al hacer login. Con NULL la fila ni siquiera se puede consultar:
+            -- GoTrue responde 500 «Database error finding user» para cualquier
+            -- intento (incluso con la contraseña equivocada) y la cuenta queda
+            -- inutilizable. (Verificado en producción 26/10/2026.)
+            confirmation_token, recovery_token,
+            email_change, email_change_token_new,
             raw_app_meta_data, raw_user_meta_data,
             created_at, updated_at
         ) VALUES (
@@ -123,6 +131,7 @@ BEGIN
             v_uid, 'authenticated', 'authenticated',
             v_email, crypt(p_password, gen_salt('bf')),
             now(),
+            '', '', '', '',
             '{"provider":"email","providers":["email"]}'::jsonb,
             jsonb_build_object('full_name', v_nombre),
             now(), now()
